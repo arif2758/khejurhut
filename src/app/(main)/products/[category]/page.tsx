@@ -103,12 +103,13 @@ export default async function CategoryListingPage({
   const { products } = data;
 
   return (
-    <section className="max-w-7xl mx-auto px-4  py-4">
-      {/* ✅ সাইডবার বাদ - শুধু কনটেন্ট */}
+    <>
+      <section className="max-w-7xl mx-auto px-4 py-4">
+        {/* ✅ সাইডবার বাদ - শুধু কনটেন্ট */}
 
-      {/* Product Grid - 4 কলাম */}
-      {products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 ">
+        {/* Product Cards Grid: Mobile 1 | Pad 2 | Laptop 3 | Desktop 4 */}
+        {products.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
           {products.map((product) => (
             <ProductCard key={product._id.toString()} product={product} />
           ))}
@@ -138,10 +139,8 @@ export default async function CategoryListingPage({
           </div>
         </article>
       )}
-
-      <div className="mt-20">
-        <Footer />
-      </div>
     </section>
+      <Footer />
+    </>
   );
 }

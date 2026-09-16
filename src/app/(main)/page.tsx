@@ -44,7 +44,7 @@ export default async function HomePage() {
   const { featuredProducts, allProducts } = await getHomepageData();
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen flex flex-col justify-between">
       {/* 1. Top Crossfade Banner */}
       <BannerCarousel />
 

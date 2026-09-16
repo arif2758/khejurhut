@@ -73,17 +73,17 @@ const FOOTER_DATA = {
 
 export default function Footer() {
   return (
-    <footer className="relative border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-20 overflow-hidden">
+    <footer className="relative border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-20 overflow-hidden mb-0 pb-0">
       {/* 🌟 Background Decorative Glow */}
       <div className="absolute top-0 left-1/4 size-64 bg-[#9D1C20]/5 rounded-full blur-[120px] -z-10" />
 
-      <div className="max-w-7xl mx-auto px-4 py-16">
+      <div className="max-w-7xl mx-auto px-4 pt-14 pb-4 sm:pb-6">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4 lg:grid-cols-5">
           {/* Brand & Dynamic Socials */}
           <div className="col-span-2 lg:col-span-2 space-y-8">
             <div className="space-y-4">
               <LinkNext href="/" className="flex items-center gap-2.5 group">
-                <div className="relative size-12 sm:size-14 rounded-full overflow-hidden shrink-0 border border-slate-200/80 dark:border-slate-700 shadow-xs bg-[#FAF8F5] flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
+                <div className="relative size-12 sm:size-14 rounded-full overflow-hidden shrink-0 border border-slate-200/80 dark:border-slate-700 shadow-xs bg-white flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
                   <Image
                     src="/logo.png"
                     alt="খেজুর"
@@ -259,7 +259,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className=" mt-12 pt-8 border-t border-border/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        <div className="mt-10 pt-6 pb-2 border-t border-border/10 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
           <p className="text-center">
             © {new Date().toLocaleString("en-US", { year: "numeric" })}{" "}
             খেজুর. Developed with ❤️ in Bangladesh.

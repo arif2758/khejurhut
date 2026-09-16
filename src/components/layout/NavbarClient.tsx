@@ -203,7 +203,7 @@ export default function NavbarClient() {
             className="flex items-center gap-2 sm:gap-2.5 transition-transform hover:scale-105 active:scale-95 shrink-0"
             aria-label="খেজুর"
           >
-            <div className="relative size-11 sm:size-12 rounded-full overflow-hidden shrink-0 border border-slate-200/80 dark:border-slate-700 shadow-xs bg-[#FAF8F5] flex items-center justify-center">
+            <div className="relative size-11 sm:size-12 rounded-full overflow-hidden shrink-0 border border-slate-200/80 dark:border-slate-700 shadow-xs bg-white flex items-center justify-center">
               <Image
                 src="/logo.png"
                 alt="খেজুর" 
