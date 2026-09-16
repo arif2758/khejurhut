@@ -72,39 +72,33 @@ export default function QuantitySelector({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border border-border/40 bg-secondary/40 backdrop-blur-[10px] p-1 shadow-sm transition-all hover:border-border/60",
-        variant === "premium" &&
-          "bg-linear-to-b from-card/80 to-card/40 ring-1 ring-white/10 shadow-inner",
+        "inline-flex items-center h-10 border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 overflow-hidden shadow-2xs transition-all",
         className
       )}
     >
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7 shrink-0 p-0 hover:bg-primary hover:text-primary-foreground active:scale-95 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:scale-100 transition-all rounded-full"
+      <button
+        type="button"
         onClick={handleDecrease}
         disabled={quantity <= min}
         aria-label="কমান"
+        className="w-9 h-10 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-slate-200 dark:active:bg-slate-600 transition-colors border-r border-slate-200 dark:border-slate-700 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
       >
-        <Minus className="h-3.5 w-3.5" />
-      </Button>
+        <Minus className="size-3.5" />
+      </button>
 
-      <div className="flex flex-col items-center justify-center min-w-[4ch]">
-        <span className="text-sm font-black tabular-nums select-none px-1 tracking-tight">
-          {quantity}
-        </span>
-      </div>
+      <span className="w-12 text-center text-sm font-bold text-slate-900 dark:text-white tabular-nums select-none">
+        {quantity}
+      </span>
 
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-7 w-7 shrink-0 p-0 hover:bg-primary hover:text-primary-foreground active:scale-95 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:scale-100 transition-all rounded-full"
+      <button
+        type="button"
         onClick={handleIncrease}
         disabled={quantity >= max}
         aria-label="বাড়ান"
+        className="w-9 h-10 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 active:bg-slate-200 dark:active:bg-slate-600 transition-colors border-l border-slate-200 dark:border-slate-700 disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer disabled:cursor-not-allowed"
       >
-        <Plus className="h-3.5 w-3.5" />
-      </Button>
+        <Plus className="size-3.5" />
+      </button>
     </div>
   );
 }

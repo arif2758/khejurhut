@@ -128,13 +128,13 @@ export function CategoryNavClient({ categories }: CategoryNavClientProps) {
   return (
     <div
       className={cn(
-        "fixed top-12 left-0 right-0 z-40  backdrop-blur-md border-b border-border/40 transition-transform duration-300 ease-in-out",
+        "fixed top-14 left-0 right-0 z-40 overflow-hidden bg-white/98 dark:bg-slate-900/98 border-b border-slate-200/90 dark:border-slate-800 transition-transform duration-300 ease-in-out shadow-2xs",
         !isVisible && "-translate-y-full",
       )}
       aria-label="Category navigation"
     >
       {/* Left fade */}
-      <div className="absolute left-0 top-0 bottom-0 w-12 bg-linear-to-r from-card/80 to-transparent z-10 pointer-events-none" />
+      <div className="absolute left-0 top-0 bottom-0 w-10 bg-linear-to-r from-white dark:from-slate-900 to-transparent z-10 pointer-events-none" />
 
       {showLeft && (
         <Button
@@ -142,10 +142,10 @@ export function CategoryNavClient({ categories }: CategoryNavClientProps) {
           size="icon"
           onClick={() => scroll("left")}
           disabled={isScrolling}
-          className="absolute -left-1 top-1/2 -translate-y-1/2 z-20 h-8 w-8 p-0 rounded-full bg-card/90 backdrop-blur-md hover:bg-card shadow-md border border-border/40 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+          className="absolute left-1 top-1/2 -translate-y-1/2 z-20 h-8 w-8 p-0 rounded-full bg-white dark:bg-slate-800 hover:bg-slate-50 shadow-md border border-slate-200 dark:border-slate-700 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
           aria-label="Scroll categories left"
         >
-          <ChevronLeft className="size-8 stroke-3" />
+          <ChevronLeft className="size-4 stroke-2" />
         </Button>
       )}
 
@@ -154,14 +154,14 @@ export function CategoryNavClient({ categories }: CategoryNavClientProps) {
         className="overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
         style={{ scrollBehavior: "auto" }}
       >
-        <div className="flex items-center gap-2 py-2.5 px-12">
+        <div className="flex items-center gap-2 py-2.5 px-10">
           <button
             onClick={() => router.push("/products")}
             className={cn(
-              "rounded-full px-4 text-xs h-8 transition-all duration-200 font-medium shrink-0 whitespace-nowrap",
+              "rounded-full px-4 text-xs h-8 transition-all duration-200 font-medium shrink-0 whitespace-nowrap cursor-pointer",
               isAllActive
-                ? "bg-gradient-to-r from-[#1A0101] to-[#260404] text-[#FAF6F0] shadow-sm shadow-[#1A0101]/30 font-bold border-none"
-                : "bg-white/80 text-[#2F0C0B] border border-[#2F0C0B]/15 hover:border-[#C59B27]/50 hover:bg-[#FAF6F0] hover:text-[#1A0101] shadow-xs",
+                ? "bg-[#240303] text-white shadow-xs font-bold border-none"
+                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-[#240303]/40 hover:text-[#240303]",
             )}
           >
             সব
@@ -172,10 +172,10 @@ export function CategoryNavClient({ categories }: CategoryNavClientProps) {
               key={slug}
               onClick={() => handleClick(slug)}
               className={cn(
-                "rounded-full px-4 text-xs h-8 transition-all duration-200 font-medium shrink-0 whitespace-nowrap",
+                "rounded-full px-4 text-xs h-8 transition-all duration-200 font-medium shrink-0 whitespace-nowrap cursor-pointer",
                 isActive(slug)
-                  ? "bg-gradient-to-r from-[#1A0101] to-[#260404] text-[#FAF6F0] shadow-sm shadow-[#1A0101]/30 font-bold border-none"
-                  : "bg-white/80 text-[#2F0C0B] border border-[#2F0C0B]/15 hover:border-[#C59B27]/50 hover:bg-[#FAF6F0] hover:text-[#1A0101] shadow-xs",
+                  ? "bg-[#240303] text-white shadow-xs font-bold border-none"
+                  : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-[#240303]/40 hover:text-[#240303]",
               )}
             >
               {name}
@@ -185,7 +185,7 @@ export function CategoryNavClient({ categories }: CategoryNavClientProps) {
       </div>
 
       {/* Right fade */}
-      <div className="absolute right-0 top-0 bottom-0 w-12 bg-linear-to-l from-card/80 to-transparent z-10 pointer-events-none" />
+      <div className="absolute right-0 top-0 bottom-0 w-10 bg-linear-to-l from-white dark:from-slate-900 to-transparent z-10 pointer-events-none" />
 
       {showRight && (
         <Button
@@ -193,10 +193,10 @@ export function CategoryNavClient({ categories }: CategoryNavClientProps) {
           size="icon"
           onClick={() => scroll("right")}
           disabled={isScrolling}
-          className="absolute -right-1 top-1/2 -translate-y-1/2 z-20 h-8 w-8 p-0 rounded-full bg-card/90 backdrop-blur-md hover:bg-card shadow-md border border-border/40 transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
+          className="absolute right-1 top-1/2 -translate-y-1/2 z-20 h-8 w-8 p-0 rounded-full bg-white dark:bg-slate-800 hover:bg-slate-50 shadow-md border border-slate-200 dark:border-slate-700 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 cursor-pointer"
           aria-label="Scroll categories right"
         >
-          <ChevronRight className="size-8 stroke-3" />
+          <ChevronRight className="size-4 stroke-2" />
         </Button>
       )}
     </div>

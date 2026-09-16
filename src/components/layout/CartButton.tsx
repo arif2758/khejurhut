@@ -3,28 +3,31 @@
 
 import Link from 'next/link'
 import { ShoppingCart } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { useCart } from '@/hooks/useCart'
 
 export default function CartButton() {
   const { cartCount: count } = useCart()
 
   return (
-    <Link href="/cart" aria-label={`Cart — ${count} item${count !== 1 ? 's' : ''}`}>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="relative h-9 w-9 rounded-full text-[#2F0C0B] hover:text-[#2A0101] hover:bg-black/5 transition-all hover:scale-105 active:scale-95"
-      >
-        <ShoppingCart className="size-4" />
+    <Link
+      href="/cart"
+      aria-label={`Cart — ${count} item${count !== 1 ? 's' : ''}`}
+      className="relative flex items-center justify-center size-9 rounded-full text-slate-700 dark:text-slate-200 hover:text-[#240303] dark:hover:text-amber-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 group cursor-pointer"
+    >
+      {/* Icon Wrapper so the badge sits precisely at the top-right outer corner of the cart icon */}
+      <div className="relative flex items-center justify-center">
+        <ShoppingCart className="size-5 stroke-[1.75] transition-colors" />
+
         {count > 0 && (
-          <Badge className="absolute -right-1 -top-1 size-5 min-w-5 rounded-full p-0 flex items-center justify-center text-[10px] font-black bg-gradient-to-r from-[#C59B27] to-[#D4A373] text-[#120000] border border-[#2A0101]/20 shadow-xs animate-in zoom-in duration-300">
-            {count > 99 ? '99+' : count}
-          </Badge>
+          <span
+            className="absolute -top-1.5 -right-2 min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center text-[10px] font-bold leading-none bg-[#9D1C20] text-white border-[1.5px] border-white dark:border-slate-900 shadow-2xs tabular-nums select-none pointer-events-none"
+          >
+            <span className="flex items-center justify-center leading-none">
+              {count > 99 ? '99+' : count}
+            </span>
+          </span>
         )}
-      </Button>
+      </div>
     </Link>
   )
 }
- 

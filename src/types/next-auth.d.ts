@@ -7,12 +7,15 @@ declare module "next-auth" {
       id: string;
       role: "user" | "admin";
       name: string;
+      phone?: string;
+      hasPassword?: boolean;
     } & DefaultSession["user"];
   }
 
-  // ✅ DefaultUser extend করো — এটাই "role does not exist" ফিক্স করে
   interface User extends DefaultUser {
     role: "user" | "admin";
+    phone?: string;
+    hasPassword?: boolean;
   }
 }
 
@@ -21,5 +24,7 @@ declare module "next-auth/jwt" {
     id: string;
     role: "user" | "admin";
     name: string;
+    phone?: string;
+    hasPassword?: boolean;
   }
-}
+}

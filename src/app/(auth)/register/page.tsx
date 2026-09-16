@@ -3,12 +3,12 @@ import { RegisterForm } from "@/components/auth/RegisterForm";
 
 export default function RegisterPage() {
   return (
-    <main className="min-h-screen py-20 px-4 flex items-center justify-center relative overflow-hidden">
-      {/* Background ambient glows for depth */}
-      <div className="absolute top-1/4 left-1/4 size-96 bg-[#1A0101]/5 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-1/4 right-1/4 size-96 bg-[#C59B27]/10 rounded-full blur-[140px] pointer-events-none" />
+    <main className="min-h-screen py-12 px-4 flex items-center justify-center bg-gradient-to-br from-[#fdf2f2]/60 via-[#f8fafc] to-[#fff7ed]/50 relative overflow-hidden">
+      {/* Soft ambient background glows */}
+      <div className="absolute top-10 left-10 size-96 bg-[#9D1C20]/5 rounded-full blur-[140px] pointer-events-none" />
+      <div className="absolute bottom-10 right-10 size-96 bg-[#C59B27]/5 rounded-full blur-[140px] pointer-events-none" />
 
-      <Suspense fallback={<div className="text-sm font-bold opacity-20">Loading...</div>}>
+      <Suspense fallback={<div className="text-sm font-medium text-slate-400">Loading...</div>}>
          <RegisterForm />
       </Suspense>
     </main>

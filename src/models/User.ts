@@ -37,6 +37,7 @@ const UserSchema = new Schema<IUser & Document>(
     resetToken: { type: String },
     resetTokenExpiry: { type: Date },
     lastLogin: { type: Date },
+    providers: { type: [String], default: [] },
   },
   { timestamps: true },
 );

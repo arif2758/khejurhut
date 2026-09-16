@@ -6,11 +6,18 @@ import Product from "@/models/Product"; // Fix MissingSchemaError
 import { dbConnect } from "@/lib/db";
 import { CheckoutForm } from "./CheckoutForm";
 import { redirect } from "next/navigation";
-import { PackageCheck } from "lucide-react";
+import { ChevronRight, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
+import { Metadata } from "next";
 
 // Types
 import { IPopulatedCartItem, ICart } from "@/types/cart";
 import { Document } from "mongoose";
+
+export const metadata: Metadata = {
+  title: "চেকআউট | খেজুর হাট",
+  description: "আপনার পছন্দের প্রিমিয়াম খেজুর ও পণ্য সরাসরি হাতে পেতে ডেলিভারি ঠিকানা দিন।",
+};
 
 // Helper type for Mongoose returned cart
 type PopulatedCartDoc = Document &
@@ -26,7 +33,7 @@ export default async function CheckoutPage() {
   const cookieStore = await cookies();
   const guestSessionId = cookieStore.get("cart_session_id")?.value;
 
-  // ✅ FIX: Type safe cart fetching
+  // ✅ Type safe cart fetching
   let cartDoc: PopulatedCartDoc | null = null;
 
   if (session?.user?.id) {
@@ -62,29 +69,44 @@ export default async function CheckoutPage() {
   const serializableItems = JSON.parse(JSON.stringify(items));
 
   return (
-    <div className="container mx-auto px-4 py-4 min-h-screen">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col gap-2 max-w-6xl mx-auto">
-          <div className="flex items-center gap-3">
-            <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-              <PackageCheck className="size-6" />
-            </div>
-            <h1 className="text-3xl  font-black tracking-widest">চেকআউট</h1>
-          </div>
-          <p className="text-muted-foreground  ">
-            আপনার পছন্দের প্রিমিয়াম গ্যাজেটগুলো পেতে নিচের তথ্যগুলো পূরণ করুন।
-          </p>
-        </div>
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 pb-20 min-h-screen space-y-4 overflow-x-hidden min-w-0">
+      {/* ── Breadcrumbs (Ant Design Style) ── */}
+      <nav className="flex items-center gap-1.5 text-xs text-slate-500 overflow-x-auto whitespace-nowrap scrollbar-none py-1">
+        <Link href="/" className="hover:text-[#240303] dark:hover:text-[#E5B869] transition-colors shrink-0">
+          হোম
+        </Link>
+        <ChevronRight className="size-3 text-slate-400 shrink-0" />
+        <Link href="/cart" className="hover:text-[#240303] dark:hover:text-[#E5B869] transition-colors shrink-0">
+          কার্ট
+        </Link>
+        <ChevronRight className="size-3 text-slate-400 shrink-0" />
+        <span className="text-slate-800 dark:text-slate-200 font-semibold truncate">
+          চেকআউট
+        </span>
+      </nav>
 
-        <CheckoutForm
-          cart={{ items: serializableItems, total }}
-          user={{
-            name: session?.user?.name || null,
-            email: session?.user?.email || null,
-            // session user এ phone থাকলে সেটা এখানে পাস করতে পারেন
-          }}
-        />
+      {/* ── Ant Design Page Header ── */}
+      <div className="pb-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
+            চেকআউট
+          </h1>
+          <span className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-md">
+            <CheckCircle2 className="size-3" /> নিরাপদ অর্ডার
+          </span>
+        </div>
+        <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
+          আপনার অর্ডারটি নিশ্চিত করতে নিচের ডেলিভারি ঠিকানা ও পেমেন্ট তথ্য পূরণ করুন।
+        </p>
       </div>
+
+      <CheckoutForm
+        cart={{ items: serializableItems, total }}
+        user={{
+          name: session?.user?.name || null,
+          email: session?.user?.email || null,
+        }}
+      />
     </div>
   );
 }

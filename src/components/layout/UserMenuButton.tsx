@@ -36,14 +36,13 @@ export default function UserMenuButton() {
   if (!session) {
     return (
       <Link href="/login">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-10 w-10 rounded-full hover:bg-slate-100 transition-all hover:scale-105 active:scale-95 border border-slate-200 bg-white"
+        <button
+          type="button"
+          className="size-9 rounded-full flex items-center justify-center text-slate-700 hover:text-[#240303] hover:bg-slate-100 dark:text-slate-200 dark:hover:text-amber-400 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 cursor-pointer"
           aria-label="Login"
         >
-          <User className="size-5 text-slate-500" />
-        </Button>
+          <User className="size-5 stroke-[1.75]" />
+        </button>
       </Link>
     );
   }
@@ -60,25 +59,28 @@ export default function UserMenuButton() {
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <button
-          className="group relative flex items-center gap-2  rounded-full hover:bg-slate-50 transition-all focus:outline-none"
+          type="button"
+          className="size-9 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 focus:outline-none cursor-pointer"
           aria-label="Account menu"
         >
-          <div className="relative">
-            <Avatar className="   transition-transform group-hover:scale-105">
+          <div className="relative size-[30px] flex items-center justify-center">
+            <Avatar className="size-[30px] border border-slate-200 dark:border-slate-700 shadow-2xs">
               <AvatarImage
                 src={session.user?.image ?? ""}
                 alt={session.user?.name ?? "User"}
               />
-              <AvatarFallback>{initials}</AvatarFallback>
+              <AvatarFallback className="bg-[#240303] text-white text-[11px] font-bold">
+                {initials}
+              </AvatarFallback>
             </Avatar>
-            <div className="absolute -bottom-0.5 -right-0.5 size-3.5 bg-emerald-500 border border-white rounded-full" />
+            <div className="absolute -bottom-0.5 -right-0.5 size-2.5 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full" />
           </div>
         </button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
         align="end"
-        className="w-72 rounded-[1.5rem] p-2 shadow-2xl border-slate-200 mt-2 bg-white/95 backdrop-blur-xl"
+        className="w-72 rounded-2xl p-2 shadow-xl border border-slate-200 dark:border-slate-800 mt-2 bg-white dark:bg-slate-900"
       >
         {/* User Header */}
         <div className="flex items-center gap-3 p-4">

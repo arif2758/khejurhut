@@ -1,5 +1,9 @@
 import { Schema, models, model, Document } from "mongoose";
 import type { IProduct } from "@/types/product";
+import Category from "./Category";
+
+// Ensure Category model is loaded and registered in mongoose
+void Category;
 
 const ProductVariantAttributeSchema = new Schema(
   {

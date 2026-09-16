@@ -73,26 +73,26 @@ const FOOTER_DATA = {
 
 export default function Footer() {
   return (
-    <footer className=" relative border-t border-border/40 bg-card/30 backdrop-blur-3xl mt-20 overflow-hidden">
+    <footer className="relative border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mt-20 overflow-hidden">
       {/* 🌟 Background Decorative Glow */}
-      <div className="absolute top-0 left-1/4 size-64 bg-primary/5 rounded-full blur-[120px] -z-10" />
+      <div className="absolute top-0 left-1/4 size-64 bg-[#9D1C20]/5 rounded-full blur-[120px] -z-10" />
 
-      <div className=" container sm:max-w-6xl sm:mx-auto  px-4 py-16">
+      <div className="max-w-7xl mx-auto px-4 py-16">
         <div className="grid grid-cols-2 gap-10 md:grid-cols-4 lg:grid-cols-5">
           {/* Brand & Dynamic Socials */}
           <div className="col-span-2 lg:col-span-2 space-y-8">
             <div className="space-y-4">
-              <LinkNext href="/" className="flex items-center gap-2 group">
-                <div className="relative size-16 transition-transform duration-500 group-hover:scale-105">
+              <LinkNext href="/" className="flex items-center gap-2.5 group">
+                <div className="relative size-12 sm:size-14 rounded-full overflow-hidden shrink-0 border border-slate-200/80 dark:border-slate-700 shadow-xs bg-[#FAF8F5] flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
                   <Image
                     src="/logo.png"
                     alt="খেজুর"
                     fill
                     sizes="512px"
-                    className="object-contain"
+                    className="size-full object-cover scale-110"
                   />
                 </div>
-                <span className="text-2xl font-black tracking-tight text-primary">
+                <span className="text-2xl sm:text-3xl font-black tracking-tight whitespace-nowrap bg-clip-text text-transparent bg-linear-to-r from-[#240303] via-[#9D1C20] to-[#240303] dark:from-amber-200 dark:via-amber-400 dark:to-amber-200">
                   খেজুর
                 </span>
               </LinkNext>

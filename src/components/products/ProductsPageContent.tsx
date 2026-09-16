@@ -72,9 +72,9 @@ export function ProductsPageContent({
         </div>
       )}
 
-      {/* Product Grid */}
+      {/* Product Cards Grid: Mobile 1 | Pad 2 | Laptop 3 | Desktop 4 */}
       {products.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 animate-in fade-in duration-1000">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 animate-in fade-in duration-1000">
           {products.map((product) => (
             <ProductCard key={String(product._id)} product={product} />
           ))}

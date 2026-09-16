@@ -1,3 +1,4 @@
+// src/app/(main)/dashboard/my-orders/[id]/page.tsx
 import { auth } from "@/auth";
 import Order from "@/models/Order";
 import { dbConnect } from "@/lib/db";
@@ -11,30 +12,70 @@ import {
   ArrowLeft,
   MapPin,
   CreditCard,
-  ShieldCheck,
-  Info,
-  Calendar,
-  XCircle,
-  AlertCircle,
+  User,
+  Phone,
+  MessageCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CHANNEL_LABELS } from "@/types/order";
 import Link from "next/link";
 import Image from "next/image";
 import { redirect, notFound } from "next/navigation";
-import type { IOrderSerializable, IOrderItem } from "@/types/order";
+import type { IOrderSerializable } from "@/types/order";
 
 const STATUS_STEPS = [
-  { id: "pending", label: "Pending", icon: Clock },
-  { id: "confirmed", label: "Confirmed", icon: CheckCircle2 },
-  { id: "processing", label: "Processing", icon: Package },
-  { id: "shipped", label: "Shipped", icon: Truck },
-  { id: "delivered", label: "Delivered", icon: CheckCircle2 },
+  { id: "pending", label: "অর্ডার গ্রহণ", icon: Clock },
+  { id: "confirmed", label: "নিশ্চিতকৃত", icon: CheckCircle2 },
+  { id: "processing", label: "প্রসেসিং", icon: Package },
+  { id: "shipped", label: "ডেলিভারিতে", icon: Truck },
+  { id: "delivered", label: "সম্পন্ন", icon: CheckCircle2 },
 ];
+
+const STATUS_TAGS: Record<string, { label: string; className: string }> = {
+  pending: {
+    label: "অপেক্ষমাণ (Pending)",
+    className:
+      "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800",
+  },
+  confirmed: {
+    label: "নিশ্চিতকৃত (Confirmed)",
+    className:
+      "bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800",
+  },
+  processing: {
+    label: "প্রসেসিং (Processing)",
+    className:
+      "bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800",
+  },
+  shipped: {
+    label: "ডেলিভারিতে (Shipped)",
+    className:
+      "bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-200 dark:border-purple-800",
+  },
+  delivered: {
+    label: "সম্পন্ন (Delivered)",
+    className:
+      "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
+  },
+  cancelled: {
+    label: "বাতিল (Cancelled)",
+    className:
+      "bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800",
+  },
+  returned: {
+    label: "ফেরত (Returned)",
+    className:
+      "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700",
+  },
+};
+
+export const metadata = {
+  title: "অর্ডারের বিস্তারিত | খেজুর হাট | খেজুর",
+  description: "অর্ডারের পূর্ণাঙ্গ বিবরণ, ট্র্যাকিং স্ট্যাটাস ও শিপিং তথ্য।",
+};
 
 async function getOrder(
   id: string,
-  userId: string,
+  userId: string
 ): Promise<IOrderSerializable | null> {
   await dbConnect();
   const order = await Order.findOne({ _id: id, user: userId }).lean();
@@ -57,340 +98,266 @@ export default async function UserOrderDetailsPage({
 
   const currentStatus = order.orderStatus || "pending";
   const currentStepIndex = STATUS_STEPS.findIndex(
-    (step) => step.id === currentStatus,
+    (step) => step.id === currentStatus
   );
+  const statusTag = STATUS_TAGS[currentStatus] || STATUS_TAGS.pending;
+
+  const whatsappUrl = `https://wa.me/8801568390014?text=${encodeURIComponent(
+    `আসসালামু আলাইকুম, আমার অর্ডার নম্বর: ${order.orderNumber}, এ বিষয়ে জানতে চাচ্ছি।`
+  )}`;
 
   return (
-    <div className="max-w-5xl mx-auto py-6 sm:py-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
       {/* Header */}
-      <div className="mb-8 sm:mb-10 space-y-4">
+      <div className="space-y-3">
         <Link
-          href="/dashboard"
-          className="inline-flex items-center gap-2 text-xs font-black text-slate-400 hover:text-primary transition-colors uppercase tracking-widest"
+          href="/dashboard/my-orders"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#240303] dark:hover:text-[#E5B869] transition-colors"
         >
-          <ArrowLeft className="size-3" />
-          Back to Dashboard
+          <ArrowLeft className="size-3.5" />
+          <span>আমার অর্ডারসমূহে ফিরুন</span>
         </Link>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+
+        <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 p-4 sm:p-6 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="text-xl font-black tracking-tight text-slate-900">
-              Order ID: {order.orderNumber}
+            <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider">
+              অর্ডার বিবরণ
+            </span>
+            <h1 className="text-xl sm:text-2xl font-mono font-black text-slate-900 dark:text-white">
+              {order.orderNumber}
             </h1>
-            <p className="text-slate-500 font-medium flex items-center gap-2">
-              <Calendar className="size-4" />
-              Placed on {format(new Date(order.createdAt), "dd MMM, yyyy")}
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              অর্ডারের তারিখ: {format(new Date(order.createdAt), "dd MMMM, yyyy - hh:mm a")}
             </p>
           </div>
-          <div className="flex items-center gap-2 px-6 py-3 bg-primary/5 border border-primary/20 rounded-2xl">
-            <CheckCircle2 className="size-5 text-primary" />
-            <span className="text-sm font-black text-primary uppercase tracking-widest">
-              {order.orderStatus}
+
+          <div className="flex items-center gap-2.5">
+            <span
+              className={cn(
+                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border",
+                statusTag.className
+              )}
+            >
+              <CheckCircle2 className="size-3.5" />
+              <span>{statusTag.label}</span>
             </span>
           </div>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      {/* Main Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Side: Progress & Items */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Progress Tracker */}
+        <div className="lg:col-span-8 space-y-6">
+          {/* Progress Tracker Card */}
           {currentStatus !== "cancelled" && currentStatus !== "returned" ? (
-            <section className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-6 sm:p-12">
-              <h3 className="text-lg font-black tracking-tight mb-8 sm:mb-12 flex items-center gap-2">
-                <Truck className="size-6 text-primary" />
-                Delivery Status
+            <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 p-5 sm:p-6 shadow-xs space-y-6">
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Truck className="size-4 text-[#240303] dark:text-[#E5B869]" />
+                ডেলিভারি ট্র্যাকিং অগ্রগতি
               </h3>
 
-              <div className="relative flex items-center justify-between">
-                <div className="absolute left-0 top-4.5 w-full h-1 bg-slate-100 rounded-full" />
+              <div className="relative flex items-center justify-between max-w-xl mx-auto py-2">
+                <div className="absolute left-0 top-4 w-full h-0.5 bg-slate-200 dark:bg-slate-800" />
                 <div
-                  className="absolute left-0 top-4.5 h-1 bg-primary rounded-full transition-all duration-1000"
+                  className="absolute left-0 top-4 h-0.5 bg-[#240303] dark:bg-[#E5B869] transition-all duration-500"
                   style={{
-                    width: `${(currentStepIndex / (STATUS_STEPS.length - 1)) * 100}%`,
+                    width: `${Math.max(
+                      0,
+                      (currentStepIndex / (STATUS_STEPS.length - 1)) * 100
+                    )}%`,
                   }}
                 />
 
                 {STATUS_STEPS.map((step, idx) => {
                   const isCompleted = idx <= currentStepIndex;
+                  const isCurrent = idx === currentStepIndex;
+
                   return (
                     <div
                       key={step.id}
-                      className="relative z-10 flex flex-col items-center gap-4"
+                      className="relative z-10 flex flex-col items-center gap-2"
                     >
                       <div
                         className={cn(
-                          "size-10 rounded-full flex items-center justify-center border-4 transition-all duration-500",
+                          "size-8 rounded-full flex items-center justify-center border-2 transition-all duration-300",
                           isCompleted
-                            ? "bg-primary border-white text-white shadow-lg shadow-primary/20 scale-110"
-                            : "bg-white border-slate-100 text-slate-300",
+                            ? "bg-[#240303] border-white dark:border-slate-900 text-white shadow-xs"
+                            : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"
                         )}
                       >
-                        <step.icon className="size-4" />
-                      </div>
-                      <div className="text-center">
-                        <p
+                        <step.icon
                           className={cn(
-                            "text-[10px] font-black uppercase tracking-widest leading-none mb-1",
-                            isCompleted ? "text-slate-900" : "text-slate-400",
+                            "size-3.5",
+                            isCurrent && "animate-pulse text-[#E5B869]"
                           )}
-                        >
-                          {step.label}
-                        </p>
-                        {isCompleted && (
-                          <p className="text-[8px] font-bold text-primary/60 uppercase">
-                            Completed
-                          </p>
-                        )}
+                        />
                       </div>
+                      <p
+                        className={cn(
+                          "text-[10px] sm:text-xs font-bold text-center",
+                          isCompleted
+                            ? "text-slate-900 dark:text-white"
+                            : "text-slate-400 dark:text-slate-500"
+                        )}
+                      >
+                        {step.label}
+                      </p>
                     </div>
                   );
                 })}
               </div>
-            </section>
+            </div>
           ) : (
-            <section className="rounded-[2.5rem] border border-slate-200 shadow-sm p-12 flex flex-col items-center justify-center text-center space-y-4 bg-rose-50">
-              <div className="size-16 rounded-full flex items-center justify-center bg-rose-100 text-rose-600">
-                {currentStatus === "cancelled" ? (
-                  <XCircle className="size-8" />
-                ) : (
-                  <AlertCircle className="size-8" />
-                )}
-              </div>
-              <div>
-                <h3 className="text-xl font-black uppercase tracking-widest text-rose-600">
-                  Order{" "}
-                  {currentStatus === "cancelled" ? "Cancelled" : "Returned"}
-                </h3>
-                <p className="text-slate-500 font-medium text-sm mt-1">
-                  This order has been{" "}
-                  {currentStatus === "cancelled"
-                    ? "cancelled"
-                    : "returned and processed"}
-                  .
-                </p>
-              </div>
-            </section>
+            <div className="bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 rounded-xl p-4 sm:p-5 text-center">
+              <p className="text-rose-700 dark:text-rose-400 font-bold text-xs sm:text-sm">
+                এই অর্ডারটি {currentStatus === "cancelled" ? "বাতিল" : "ফেরত"} করা হয়েছে।
+              </p>
+            </div>
           )}
 
-          {/* Items List */}
-          <section className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-5 sm:p-8 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-              <h3 className="font-black tracking-tight flex items-center gap-2">
-                <Package className="size-5 text-primary" />
-                Package Items ({order.items.length})
+          {/* Items Card */}
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden">
+            <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Package className="size-4 text-[#240303] dark:text-[#E5B869]" />
+                অর্ডারকৃত পণ্যসমূহ
               </h3>
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                {order.items.length} টি আইটেম
+              </span>
             </div>
-            <div className="divide-y divide-slate-50">
-              {order.items.map((item: IOrderItem, idx: number) => (
+
+            <div className="divide-y divide-slate-100 dark:divide-slate-800 px-4 sm:px-5">
+              {order.items.map((item, idx) => (
                 <div
                   key={idx}
-                  className="p-5 sm:p-8 flex items-center gap-6 hover:bg-slate-50/30 transition-colors"
+                  className="py-3.5 flex items-center justify-between gap-4 text-xs sm:text-sm"
                 >
-                  <div className="relative size-20 rounded-2xl border border-slate-100 bg-white p-2 overflow-hidden shadow-sm shrink-0">
-                    <Image
-                      src={item.productImage}
-                      alt={item.productTitle}
-                      fill
-                      sizes="80px"
-                      className="object-contain p-1"
-                    />
-                  </div>
-                  <div className="flex-1 space-y-1">
-                    <h4 className="text-base font-black text-slate-900 leading-tight">
-                      {item.productTitle}
-                    </h4>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                      SKU: {item.productSku}
-                    </p>
-                    {(item.color || item.size) && (
-                      <p className="text-xs font-semibold text-slate-600">
-                        {[item.color && `কালার: ${item.color}`, item.size && `সাইজ: ${item.size}`].filter(Boolean).join(" | ")}
+                  <div className="flex items-center gap-3.5 min-w-0 flex-1">
+                    <div className="relative size-12 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 overflow-hidden shrink-0">
+                      <Image
+                        src={item.productImage || "/logo.png"}
+                        alt={item.productTitle}
+                        fill
+                        sizes="48px"
+                        className="object-contain p-1"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold text-slate-900 dark:text-white truncate">
+                        {item.productTitle}
                       </p>
-                    )}
-                    <div className="flex items-center gap-4 mt-2">
-                      <p className="text-sm font-black text-primary">
-                        {formatPrice(item.unitPrice)}
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        পরিমাণ: {item.itemQuantity} × {formatPrice(item.unitPrice)}
                       </p>
-                      <span className="text-[10px] font-black bg-slate-100 px-2 py-0.5 rounded uppercase tracking-widest text-slate-500">
-                        Qty: {item.itemQuantity}
-                      </span>
                     </div>
                   </div>
-                  <p className="hidden sm:block text-lg font-black text-slate-900 tracking-tighter">
+
+                  <span className="font-bold text-slate-900 dark:text-slate-100 shrink-0 text-right">
                     {formatPrice(item.unitPrice * item.itemQuantity)}
-                  </p>
+                  </span>
                 </div>
               ))}
             </div>
-
-            {/* Pricing Footer */}
-            {(() => {
-              const effectiveVipPrivilege = (order.vipPrivilege && order.vipPrivilege > 0) ? order.vipPrivilege : (order.discount || 0);
-              const codAmount = Math.max(0, order.total - (order.advancePaid || 0));
-              return (
-                <div className="p-6 sm:p-8 bg-slate-900 text-white flex flex-col sm:flex-row items-center justify-between gap-6">
-                  <div className="flex flex-wrap items-center gap-6 text-center sm:text-left">
-                    <div>
-                      <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1">
-                        SUBTOTAL
-                      </p>
-                      <p className="text-sm font-bold">
-                        {formatPrice(order.subtotal)}
-                      </p>
-                    </div>
-                    {effectiveVipPrivilege > 0 && (
-                      <>
-                        <div className="w-px h-8 bg-white/10 hidden sm:block" />
-                        <div>
-                          <p className="text-[9px] font-black uppercase text-amber-400 tracking-widest mb-1">
-                            🌟 VIP PRIVILEGE
-                          </p>
-                          <p className="text-sm font-bold text-amber-400">
-                            -{formatPrice(effectiveVipPrivilege)}
-                          </p>
-                        </div>
-                      </>
-                    )}
-                    <div className="w-px h-8 bg-white/10 hidden sm:block" />
-                    <div>
-                      <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1">
-                        SHIPPING
-                      </p>
-                      <p className="text-sm font-bold">
-                        {formatPrice(order.shippingCost)}
-                      </p>
-                    </div>
-                    {Boolean(order.advancePaid && order.advancePaid > 0) && (
-                      <>
-                        <div className="w-px h-8 bg-white/10 hidden sm:block" />
-                        <div>
-                          <p className="text-[9px] font-black uppercase text-blue-400 tracking-widest mb-1">
-                            💳 ADVANCE PAID
-                          </p>
-                          <p className="text-sm font-bold text-blue-400">
-                            -{formatPrice(order.advancePaid || 0)}
-                          </p>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-6">
-                    <div className="text-right">
-                      <p className="text-[10px] font-black uppercase text-primary tracking-widest mb-1">
-                        {order.advancePaid && order.advancePaid > 0 ? "NET COD TOTAL" : "GRAND TOTAL"}
-                      </p>
-                      <p className="text-3xl font-black tracking-tighter">
-                        {formatPrice(codAmount)}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
-          </section>
+          </div>
         </div>
 
-        {/* Right Side: Shipping & Help */}
-        <div className="space-y-8">
-          {/* Shipping Info */}
-          <section className="bg-white rounded-[2.5rem] border border-slate-200 shadow-sm p-6 sm:p-8 space-y-8">
-            <h3 className="font-black tracking-tight flex items-center gap-3 border-b border-slate-50 pb-4">
-              <MapPin className="size-5 text-primary" />
-              Shipping Address
+        {/* Right Side: Customer & Financial Summary */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Shipping Details */}
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 p-4 sm:p-5 shadow-xs space-y-3.5">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800">
+              <MapPin className="size-4 text-[#240303] dark:text-[#E5B869]" />
+              ডেলিভারি ও গ্রাহকের ঠিকানা
             </h3>
 
-            <div className="space-y-6">
-              <div className="space-y-1">
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                  NAME
-                </p>
-                <p className="text-base font-black text-slate-900">
-                  {order.shipping.name}
-                </p>
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
+                <User className="size-3.5 text-slate-400 shrink-0" />
+                <span className="font-bold">{order.shipping.name}</span>
               </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                  CONTACT NUMBER
-                </p>
-                <p className="text-base font-black text-slate-900">
-                  {order.shipping.phone}
-                </p>
+              <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                <Phone className="size-3.5 text-slate-400 shrink-0" />
+                <span>{order.shipping.phone}</span>
               </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                  ADDRESS
-                </p>
-                <p className="text-sm font-bold text-slate-700 leading-relaxed italic">
-                  {[
-                    order.shipping.addressLine1,
-                    order.shipping.addressLine2,
-                    order.shipping.city,
-                    order.shipping.district,
-                  ]
-                    .filter((p): p is string => Boolean(p) && !/outside dhaka|inside dhaka|^dhaka$/i.test(p!.trim()))
-                    .join(", ") || order.shipping.addressLine1}
-                </p>
+              <div className="text-slate-500 dark:text-slate-400 pl-5.5 leading-relaxed">
+                {order.shipping.addressLine1}
+                {order.shipping.city ? `, ${order.shipping.city}` : ""}
+                {order.shipping.district ? `, ${order.shipping.district}` : ""}
               </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                  DELIVERY ZONE
-                </p>
-                <p className="text-sm font-black text-primary">
-                  {order.shipping.deliveryZone || (order.shippingCost > 80 ? "OSD (Outside Dhaka)" : "ISD (Inside Dhaka)")}
-                </p>
-              </div>
+              {order.shipping.deliveryZone && (
+                <div className="pt-1">
+                  <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-[#fdf6f0] dark:bg-slate-800 text-[#240303] dark:text-[#E5B869] border border-[#240303]/10 dark:border-slate-700">
+                    এরিয়া: {order.shipping.deliveryZone}
+                  </span>
+                </div>
+              )}
             </div>
-          </section>
+          </div>
 
-          {/* Payment Status */}
-          <section className="bg-white rounded-[2.5rem] border border-slate-200 p-6 sm:p-8 space-y-6 relative overflow-hidden">
-            <div className="absolute top-0 right-0 size-32 bg-primary/10 rounded-full blur-2xl -mr-16 -mt-16" />
-            <h3 className="font-black tracking-tight flex items-center gap-3">
-              <CreditCard className="size-5 text-primary" />
-              Payment Status
+          {/* Payment Method & Status */}
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 p-4 sm:p-5 shadow-xs space-y-3.5">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800">
+              <CreditCard className="size-4 text-[#240303] dark:text-[#E5B869]" />
+              পেমেন্ট তথ্য
             </h3>
 
-            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                  METHOD
-                </p>
-                <span className="text-xs font-black uppercase text-slate-900">
-                  {order.paymentMethod}
+            <div className="space-y-1.5 text-xs">
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <span>পদ্ধতি:</span>
+                <span className="font-bold text-slate-800 dark:text-slate-200">
+                  {order.paymentMethod === "cod"
+                    ? "ক্যাশ অন ডেলিভারি"
+                    : `মোবাইল ব্যাংকিং (${order.paymentProvider || ""})`}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                  STATUS
-                </p>
-                <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 text-[10px] font-black uppercase tracking-widest">
-                  <CheckCircle2 className="size-3" />
-                  {order.paymentStatus || "Paid"}
-                </div>
+              <div className="flex justify-between text-slate-600 dark:text-slate-400">
+                <span>স্ট্যাটাস:</span>
+                <span className="font-bold capitalize text-slate-800 dark:text-slate-200">
+                  {order.paymentStatus || "Pending"}
+                </span>
               </div>
             </div>
-
-            <div className="flex items-center gap-3 p-4 bg-white/50 rounded-2xl text-[10px] font-bold text-slate-500 leading-relaxed italic">
-              <ShieldCheck className="size-4 text-primary shrink-0" />
-              Your transaction is secured with 256-bit SSL encryption.
-            </div>
-          </section>
-
-          {/* Help Card */}
-          <div className="bg-slate-900 rounded-[2.5rem] p-6 sm:p-8 text-white relative overflow-hidden group">
-            <div className="absolute bottom-0 right-0 size-48 bg-primary/20 rounded-full blur-[80px] -mb-24 -mr-24 transition-all group-hover:scale-125" />
-            <h3 className="font-black tracking-tight mb-4 flex items-center gap-2">
-              <Info className="size-5 text-primary" />
-              Need Help?
-            </h3>
-            <p className="text-xs text-slate-400 font-medium mb-6 leading-relaxed">
-              Having trouble with your order? Our support team is available
-              24/7.
-            </p>
-            <button className="w-full bg-white text-slate-900 font-black tracking-tight px-6 py-4 rounded-2xl hover:bg-primary hover:text-white transition-all shadow-xl">
-              Contact Support
-            </button>
           </div>
+
+          {/* Financial Breakdown */}
+          <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 p-4 sm:p-5 shadow-xs space-y-2 text-xs sm:text-sm">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white pb-2 border-b border-slate-100 dark:border-slate-800">
+              হিসাবের সারসংক্ষেপ
+            </h3>
+
+            <div className="flex justify-between text-slate-600 dark:text-slate-400">
+              <span>সাবটোটাল</span>
+              <span>{formatPrice(order.subtotal)}</span>
+            </div>
+            <div className="flex justify-between text-slate-600 dark:text-slate-400">
+              <span>ডেলিভারি চার্জ</span>
+              <span>{formatPrice(order.shippingCost)}</span>
+            </div>
+            {order.discount ? (
+              <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
+                <span>ডিসকাউন্ট</span>
+                <span>- {formatPrice(order.discount)}</span>
+              </div>
+            ) : null}
+
+            <div className="flex justify-between font-black text-sm sm:text-base text-[#240303] dark:text-[#E5B869] pt-2 border-t border-slate-100 dark:border-slate-800">
+              <span>সর্বমোট</span>
+              <span>{formatPrice(order.total)}</span>
+            </div>
+          </div>
+
+          {/* WhatsApp Support Link */}
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 text-xs font-bold hover:bg-emerald-100/60 dark:hover:bg-emerald-900/40 transition-colors"
+          >
+            <MessageCircle className="size-4" />
+            <span>এই অর্ডার নিয়ে WhatsApp-এ সহায়তা নিন</span>
+          </a>
         </div>
       </div>
     </div>

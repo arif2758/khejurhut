@@ -5,13 +5,13 @@ import CategoryNav from "./CategoryNav";
 
 export default function Header() {
   return (
-    <header className="w-full">
+    <header className="w-full border-none">
       {/*
         <PromoBar />
         Note: PromoBar is currently disabled. Enable this later if needed.
       */}
       <NavbarClient />
-      <CategoryNav />
+      {/* <CategoryNav /> */}
     </header>
   );
 } 

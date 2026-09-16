@@ -8,11 +8,10 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useQueryClient } from "@tanstack/react-query";
-import { createOrder, } from "@/actions/order";
+import { createOrder } from "@/actions/order";
 import {
   calculateShippingCost,
   getWeightTierLabel,
-  DELIVERY_ZONES,
   DeliveryZone,
 } from "@/lib/shipping";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import {
   Loader2,
@@ -29,11 +27,13 @@ import {
   Truck,
   ArrowRight,
   Check,
-  PackageCheck,
   User,
   CreditCard,
   Zap,
-  Weight,
+  Package,
+  RotateCcw,
+  Copy,
+  Info,
 } from "lucide-react";
 import { formatPrice } from "@/lib/priceUtils";
 import Image from "next/image";
@@ -106,8 +106,6 @@ const PAYMENT_ACCOUNTS = {
   },
 } as const;
 
-type ProviderKey = keyof typeof PAYMENT_ACCOUNTS;
-
 export function CheckoutForm({ cart, user }: CheckoutFormProps) {
   const { data: session } = useSession();
   const queryClient = useQueryClient();
@@ -135,7 +133,7 @@ export function CheckoutForm({ cart, user }: CheckoutFormProps) {
     },
   });
 
-  // লগইন করে ফিরে আসার পর ডাটা রিস্টোর করো
+  // ডাটা রিস্টোর করো
   useEffect(() => {
     const savedData = sessionStorage.getItem("checkout_form_data");
     if (savedData) {
@@ -144,63 +142,65 @@ export function CheckoutForm({ cart, user }: CheckoutFormProps) {
         Object.keys(parsed).forEach((key) => {
           setValue(key as keyof CheckoutValues, parsed[key]);
         });
-        toast.success("আপনার আগের তথ্যগুলো রিস্টোর করা হয়েছে।");
       } catch (e) {
         console.error("Failed to restore checkout data", e);
-      } finally {
-        sessionStorage.removeItem("checkout_form_data");
       }
     }
   }, [setValue]);
 
-  const isGift = useWatch({ control, name: "isGift" });
-  const deliveryArea = useWatch({ control, name: "deliveryArea" });
+  const deliveryArea = useWatch({ control, name: "deliveryArea" }) || "dhaka";
   const paymentMethod = useWatch({ control, name: "paymentMethod" });
-  const paymentProvider = useWatch({
-    control,
-    name: "paymentProvider",
-  }) as ProviderKey;
+  const paymentProvider =
+    useWatch({ control, name: "paymentProvider" }) || "bkash";
+  const isGift = useWatch({ control, name: "isGift" });
 
-  // 📦 Total cart weight calculation (grams)
   const totalWeightGrams = cart.items.reduce((sum, item) => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const w = (item.product as any)?.weight || 500;
-    return sum + w * item.itemQuantity;
+    const itemWeight = (item.product as unknown as { weight?: number })?.weight || 0;
+    return sum + itemWeight * item.itemQuantity;
   }, 0);
 
-  // 🚚 Dynamic Delivery Charge Calculation
   const deliveryCharge = calculateShippingCost(
     deliveryArea as DeliveryZone,
     totalWeightGrams,
   );
   const grandTotal = cart.total + deliveryCharge;
 
-  const handleCopy = (num: string) => {
-    navigator.clipboard.writeText(num);
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text);
     setCopied(true);
+    toast.success("নাম্বার কপি করা হয়েছে!");
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const onSubmit = async (data: CheckoutValues) => {
+  const onSubmit = async (values: CheckoutValues) => {
     setIsSubmitting(true);
     try {
       const formData = new FormData();
-      (Object.keys(data) as Array<keyof CheckoutValues>).forEach((key) => {
-        const value = data[key];
-        if (typeof value === "boolean") {
-          if (value) formData.append(key, "true");
-        } else if (value !== undefined && value !== null && value !== "") {
-          formData.append(key, value);
-        }
-      });
+      formData.append("name", values.name);
+      formData.append("phone", values.phone);
+      formData.append("addressLine1", values.addressLine1);
+      formData.append("deliveryArea", values.deliveryArea);
+      formData.append("paymentMethod", values.paymentMethod);
+      if (values.paymentProvider) formData.append("paymentProvider", values.paymentProvider);
+      if (values.senderNumber) formData.append("senderNumber", values.senderNumber);
+      if (values.transactionId) formData.append("transactionId", values.transactionId);
+      if (values.customerNotes) formData.append("customerNotes", values.customerNotes);
+      formData.append("isGift", values.isGift ? "true" : "false");
+      if (values.receiverName) formData.append("receiverName", values.receiverName);
+      if (values.receiverPhone) formData.append("receiverPhone", values.receiverPhone);
 
       const result = await createOrder(formData);
-      if (result && "orderNumber" in result) {
-        queryClient.invalidateQueries({ queryKey: ["cart-count"] });
+
+      if (result && "orderNumber" in result && result.orderNumber) {
+        sessionStorage.removeItem("checkout_form_data");
         queryClient.invalidateQueries({ queryKey: ["cart-details"] });
         router.push(`/checkout/success?order=${result.orderNumber}`);
-      } else if (result && result.error) {
-        toast.error(typeof result.error === "string" ? result.error : "কিছু ভুল হয়েছে, দয়া করে আবার চেষ্টা করুন।");
+      } else if (result && "error" in result && result.error) {
+        toast.error(
+          typeof result.error === "string"
+            ? result.error
+            : "কিছু ভুল হয়েছে, দয়া করে আবার চেষ্টা করুন।",
+        );
       }
     } catch {
       toast.error("কিছু ভুল হয়েছে।");
@@ -210,169 +210,172 @@ export function CheckoutForm({ cart, user }: CheckoutFormProps) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-4">
+    <div className="w-full space-y-4">
+      {/* ── Quick Google Sign-In Banner (Ant Design Alert Style) ── */}
       {!session && (
-        <div className="mb-8 p-4 bg-primary/5 border border-primary/20 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div>
-            <h3 className="font-bold text-lg">অর্ডারটি দ্রুত করতে চান?</h3>
-            <p className="text-sm text-muted-foreground">
-              Google দিয়ে লগিন করলে আপনার নাম ও ইমেইল অটো-ফিলাপ হয়ে যাবে।
-            </p>
+        <div className="p-3.5 sm:p-4 rounded-xl border border-blue-200/80 dark:border-blue-900/60 bg-blue-50/60 dark:bg-blue-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-2xs">
+          <div className="flex items-start gap-2.5">
+            <Info className="size-4 text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
+            <div>
+              <h3 className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100">
+                অর্ডার প্রক্রিয়া আরও দ্রুত করতে চান?
+              </h3>
+              <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                Google দিয়ে লগইন করলে আপনার নাম ও তথ্যগুলো স্বয়ংক্রিয়ভাবে পূরণ হয়ে যাবে।
+              </p>
+            </div>
           </div>
-          <Link href={`/login?callbackUrl=${encodeURIComponent("/checkout")}`}>
+          <Link
+            href={`/login?callbackUrl=${encodeURIComponent("/checkout")}`}
+            className="shrink-0"
+          >
             <Button
               type="button"
               variant="outline"
-              className="shrink-0 gap-2 font-bold border-primary/20 hover:bg-primary/10"
+              className="h-8 px-3.5 rounded-lg text-xs font-semibold border-blue-300 dark:border-blue-800 text-blue-700 dark:text-blue-300 bg-white dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-950/50 shadow-2xs cursor-pointer"
             >
-              <User className="size-4" />
-              Google দিয়ে লগিন করুন
+              <User className="size-3.5 mr-1.5" />
+              Google দিয়ে লগইন করুন
             </Button>
           </Link>
         </div>
       )}
+
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="grid lg:grid-cols-12 gap-6 lg:gap-10"
+        className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-6 items-start min-w-0"
       >
-        {/* Left Side: Information */}
-        <div className="lg:col-span-7 xl:col-span-8 space-y-8">
-          {/* Section 1: Contact Info */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                <User className="size-5" />
-              </div>
-              <h2 className="text-base sm:text-lg font-black uppercase tracking-widest">
-                কন্টাক্ট ইনফরমেশন
-              </h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 bg-card/20 p-5 sm:p-7 rounded-2xl border border-border/40">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
-                  নাম
+        {/* ── Left Side: Form Information (Ant Design Cards) ── */}
+        <div className="lg:col-span-7 xl:col-span-8 space-y-4 min-w-0">
+          {/* Section 1: Contact Information Card */}
+          <div className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-xs space-y-4 min-w-0">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800">
+              <User className="size-4 text-[#240303] dark:text-[#E5B869]" />
+              কন্টাক্ট ইনফরমেশন
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                  নাম <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   {...register("name")}
                   placeholder="আপনার পুরো নাম"
-                  className="h-12 rounded-xl bg-background/50 text-base"
+                  className="h-10 rounded-lg text-sm bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:border-[#240303] focus:ring-0 focus-visible:ring-0 focus:outline-none"
                 />
                 {errors.name && (
-                  <p className="text-xs text-destructive font-bold">
+                  <p className="text-xs text-red-500 font-medium mt-1">
                     {errors.name.message}
                   </p>
                 )}
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
-                  আপনার মোবাইল নম্বর (অর্ডার কনফার্ম করার জন্য)
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                  মোবাইল নম্বর <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   {...register("phone")}
                   placeholder="01XXXXXXXXX"
-                  className="h-12 rounded-xl bg-background/50 text-base"
+                  className="h-10 rounded-lg text-sm bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:border-[#240303] focus:ring-0 focus-visible:ring-0 focus:outline-none"
                 />
                 {errors.phone && (
-                  <p className="text-xs text-destructive font-bold">
+                  <p className="text-xs text-red-500 font-medium mt-1">
                     {errors.phone.message}
                   </p>
                 )}
               </div>
-              <div className="md:col-span-2">
-                <label className="flex items-center gap-3 p-4 border border-border/40 rounded-xl cursor-pointer hover:bg-card/40 transition-colors">
+
+              {/* Gift Option Checkbox */}
+              <div className="sm:col-span-2">
+                <label className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/40 hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors cursor-pointer select-none">
                   <input
                     type="checkbox"
                     {...register("isGift")}
-                    className="size-5 rounded border-border/40 text-primary focus:ring-primary"
+                    className="size-4 mt-0.5 rounded border-slate-300 text-[#240303] focus:ring-[#240303]"
                   />
                   <div>
-                    <p className="font-bold text-sm">
-                      পার্সেলটি অন্য কেউ রিসিভ করবেন?
+                    <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200">
+                      পার্সেলটি অন্য কেউ রিসিভ করবেন? (উপহার বা বিকল্প গ্রাহক)
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      ডেলিভারি রিসিভারের নাম ও নম্বর আলাদা দিন
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+                      ডেলিভারি রিসিভারের নাম ও ফোন নম্বর আলাদা দিতে এখানে টিক দিন
                     </p>
                   </div>
                 </label>
               </div>
+
               {isGift && (
                 <>
-                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                  <div className="space-y-1.5 animate-in fade-in duration-200">
+                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                       রিসিভারের নাম
                     </Label>
                     <Input
                       {...register("receiverName")}
                       placeholder="যিনি পার্সেল রিসিভ করবেন"
-                      className="h-12 rounded-xl bg-background/50 text-base"
+                      className="h-10 rounded-lg text-sm bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:border-[#240303] focus:ring-0 focus-visible:ring-0 focus:outline-none"
                     />
                   </div>
-                  <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+                  <div className="space-y-1.5 animate-in fade-in duration-200">
+                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                       রিসিভারের মোবাইল নম্বর
                     </Label>
                     <Input
                       {...register("receiverPhone")}
-                      placeholder="ডেলিভারিম্যান এই নাম্বারে কল করবে"
-                      className="h-12 rounded-xl bg-background/50 text-base"
+                      placeholder="ডেলিভারিম্যান এই নম্বরে কল করবে"
+                      className="h-10 rounded-lg text-sm bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:border-[#240303] focus:ring-0 focus-visible:ring-0 focus:outline-none"
                     />
                   </div>
                 </>
               )}
-              <div className="md:col-span-2 space-y-2">
-                <div className="flex flex-wrap items-center justify-between gap-1">
-                  <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
-                    বিস্তারিত ঠিকানা (Full Address)
+
+              {/* Detailed Address */}
+              <div className="sm:col-span-2 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1">
+                    বিস্তারিত ডেলিভারি ঠিকানা <span className="text-red-500">*</span>
                   </Label>
-                  <span className="text-[11px] font-medium text-muted-foreground">
-                    (গ্রাম/এরিয়া, থানা, জেলা)
+                  <span className="text-[11px] text-slate-400">
+                    (বাড়ি নং, রোড, এলাকা/গ্রাম, থানা, জেলা)
                   </span>
                 </div>
                 <Textarea
                   {...register("addressLine1")}
-                  placeholder="গ্রাম/এরিয়া, থানা, জেলা..."
-                  className="min-h-24 rounded-xl bg-background/50 resize-none text-base p-3.5 leading-relaxed"
+                  placeholder="আপনার পূর্ণাঙ্গ ঠিকানা লিখুন..."
+                  className="min-h-20 rounded-lg text-sm bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 p-3 leading-relaxed resize-none focus:border-[#240303] focus:ring-0 focus-visible:ring-0 focus:outline-none"
                 />
-                {errors.addressLine1 ? (
-                  <p className="text-xs text-destructive font-bold">
+                {errors.addressLine1 && (
+                  <p className="text-xs text-red-500 font-medium mt-1">
                     {errors.addressLine1.message}
-                  </p>
-                ) : (
-                  <p className="text-[11px] text-muted-foreground ml-1">
-                    দয়া করে আপনার পূর্ণাঙ্গ ঠিকানা দিন যাতে ডেলিভারিম্যান সহজেই আপনার পার্সেল পৌঁছাতে পারে।
                   </p>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Section 2: Delivery Area */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2 sm:gap-3">
-                <div className="size-8 sm:size-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                  <Truck className="size-4 sm:size-5" />
-                </div>
-                <h2 className="text-sm sm:text-lg font-black uppercase tracking-widest">
-                  ডেলিভারি এরিয়া
-                </h2>
-              </div>
-              <div className="bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200 text-[11px] sm:text-xs font-bold text-slate-700 shrink-0">
-                <span>ওজন: {totalWeightGrams}g ({getWeightTierLabel(totalWeightGrams)})</span>
+          {/* Section 2: Delivery Area Card */}
+          <div className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-xs space-y-3 min-w-0">
+            <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800">
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <Truck className="size-4 text-[#240303] dark:text-[#E5B869]" />
+                ডেলিভারি এরিয়া
+              </h2>
+              <div className="bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-md border border-slate-200 dark:border-slate-700 text-[11px] font-semibold text-slate-700 dark:text-slate-300 shrink-0">
+                ওজন: {totalWeightGrams}g ({getWeightTierLabel(totalWeightGrams)})
               </div>
             </div>
 
             <RadioGroup
-              onValueChange={(v: DeliveryZone) =>
-                setValue("deliveryArea", v)
-              }
-              className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-stretch"
+              onValueChange={(v: DeliveryZone) => setValue("deliveryArea", v)}
+              className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3"
             >
               {[
                 {
                   id: "dhaka" as const,
                   label: "ঢাকার ভেতর (ISD)",
-                  sub: "Inside Dhaka City",
+                  sub: "ঢাকা সিটির অভ্যন্তরীণ সকল এলাকা",
                   price: calculateShippingCost("dhaka", totalWeightGrams),
                 },
                 {
@@ -384,7 +387,7 @@ export function CheckoutForm({ cart, user }: CheckoutFormProps) {
                 {
                   id: "outside" as const,
                   label: "ঢাকার বাইরে (OSD)",
-                  sub: "Outside Dhaka (All Districts)",
+                  sub: "সারা বাংলাদেশের সকল জেলা/উপজেলা",
                   price: calculateShippingCost("outside", totalWeightGrams),
                 },
               ].map((area) => (
@@ -392,95 +395,93 @@ export function CheckoutForm({ cart, user }: CheckoutFormProps) {
                   key={area.id}
                   onClick={() => setValue("deliveryArea", area.id)}
                   className={cn(
-                    "relative flex flex-col justify-between p-4 rounded-xl border-2 transition-all cursor-pointer overflow-hidden",
+                    "relative flex flex-col justify-between p-3.5 rounded-lg border transition-all cursor-pointer min-w-0 overflow-hidden",
                     deliveryArea === area.id
-                      ? "border-primary bg-primary/3 ring-1 ring-primary/20 shadow-sm"
-                      : "border-border/40 bg-card/20 hover:border-primary/20",
+                      ? "border-[#240303] bg-[#fdf6f0] dark:bg-slate-800/80 shadow-2xs"
+                      : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-300"
                   )}
                 >
                   {deliveryArea === area.id && (
-                    <div className="absolute top-0 right-0 bg-primary text-white p-1 rounded-bl-xl shadow-md animate-in fade-in zoom-in duration-300">
-                      <Check className="size-3.5 stroke-[4px]" />
+                    <div className="absolute top-0 right-0 bg-[#240303] text-white w-[26px] h-[22px] flex items-center justify-center rounded-bl-xl shadow-2xs z-10 animate-in fade-in duration-150">
+                      <Check className="size-3.5 stroke-[3px] text-white" />
                     </div>
                   )}
 
-                  {/* Row 1: Top Header (Title + Price) */}
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="flex items-center justify-between gap-2 pr-5">
+                    <div className="flex items-center gap-2 min-w-0">
                       <div
                         className={cn(
-                          "size-5 rounded-full border-2 flex items-center justify-center transition-all shrink-0",
+                          "size-4 rounded-full border flex items-center justify-center transition-all shrink-0",
                           deliveryArea === area.id
-                            ? "border-primary"
-                            : "border-muted-foreground/30",
+                            ? "border-[#240303]"
+                            : "border-slate-300 dark:border-slate-600"
                         )}
                       >
-                        <div
-                          className={cn(
-                            "size-2.5 rounded-full bg-primary transition-all",
-                            deliveryArea === area.id ? "scale-100" : "scale-0",
-                          )}
-                        />
+                        {deliveryArea === area.id && (
+                          <div className="size-2 rounded-full bg-[#240303]" />
+                        )}
                       </div>
-                      <p className="font-bold text-sm leading-tight truncate">
+                      <p className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 truncate">
                         {area.label}
                       </p>
                     </div>
-                    <span className="text-base font-black text-primary shrink-0">
+                    <span className="text-xs sm:text-sm font-black text-[#240303] dark:text-[#E5B869] shrink-0">
                       ৳{area.price}
                     </span>
                   </div>
 
-                  {/* Row 2: Bottom Row (1 Column Full-Width Card Footer Subtitle) */}
-                  <div className="mt-3 pt-2.5 border-t border-border/40 text-[11px] font-medium text-muted-foreground leading-snug text-center">
+                  <p className="mt-2 text-[10px] text-slate-500 dark:text-slate-400 leading-snug">
                     {area.sub}
-                  </div>
+                  </p>
                 </div>
               ))}
             </RadioGroup>
           </div>
 
-          {/* Section 3: Payment */}
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="size-9 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-                <CreditCard className="size-5" />
-              </div>
-              <h2 className="text-base sm:text-lg font-black uppercase tracking-widest">
-                পেমেন্ট মেথড
-              </h2>
-            </div>
-            <div className="grid gap-4">
-              {/* COD */}
+          {/* Section 3: Payment Method Card */}
+          <div className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-xs space-y-3 min-w-0">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white flex items-center gap-2 pb-2.5 border-b border-slate-100 dark:border-slate-800">
+              <CreditCard className="size-4 text-[#240303] dark:text-[#E5B869]" />
+              পেমেন্ট মেথড
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Cash On Delivery */}
               <div
                 onClick={() => setValue("paymentMethod", "cod")}
                 className={cn(
-                  "relative flex items-center justify-between p-5 rounded-xl border-2 transition-all cursor-pointer overflow-hidden group",
+                  "relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer min-w-0 overflow-hidden",
                   paymentMethod === "cod"
-                    ? "border-primary bg-primary/3"
-                    : "border-border/40 bg-card/40 hover:border-primary/20",
+                    ? "border-[#240303] bg-[#fdf6f0] dark:bg-slate-800/80 shadow-2xs"
+                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-300"
                 )}
               >
                 {paymentMethod === "cod" && (
-                  <div className="absolute top-0 right-0 bg-primary text-white p-1 rounded-bl-xl shadow-md">
-                    <Check className="size-3.5 stroke-[4px]" />
+                  <div className="absolute top-0 right-0 bg-[#240303] text-white w-[26px] h-[22px] flex items-center justify-center rounded-bl-xl shadow-2xs z-10 animate-in fade-in duration-150">
+                    <Check className="size-3.5 stroke-[3px] text-white" />
                   </div>
                 )}
-                <div className="flex items-center gap-4">
-                  <Banknote
-                    className={cn(
-                      "size-6",
-                      paymentMethod === "cod"
-                        ? "text-primary"
-                        : "text-muted-foreground",
-                    )}
-                  />
-                  <div className="leading-tight">
-                    <p className="font-bold text-base">ক্যাশ অন ডেলিভারি</p>
-                    <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest mt-1">
-                      পণ্য হাতে পেয়ে টাকা দিন
-                    </p>
-                  </div>
+
+                <div
+                  className={cn(
+                    "size-4 rounded-full border flex items-center justify-center transition-all shrink-0",
+                    paymentMethod === "cod"
+                      ? "border-[#240303]"
+                      : "border-slate-300 dark:border-slate-600"
+                  )}
+                >
+                  {paymentMethod === "cod" && (
+                    <div className="size-2 rounded-full bg-[#240303]" />
+                  )}
+                </div>
+                <Banknote className="size-5 text-[#240303] dark:text-[#E5B869] shrink-0" />
+                <div className="min-w-0 pr-4">
+                  <p className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 leading-tight">
+                    ক্যাশ অন ডেলিভারি
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    পণ্য চেক করে হাতে পেয়ে টাকা দিন
+                  </p>
                 </div>
               </div>
 
@@ -488,251 +489,266 @@ export function CheckoutForm({ cart, user }: CheckoutFormProps) {
               <div
                 onClick={() => setValue("paymentMethod", "mobile")}
                 className={cn(
-                  "relative flex items-center gap-3 p-5 rounded-xl border-2 transition-all cursor-pointer w-full",
+                  "relative flex items-center gap-3 p-3.5 rounded-lg border transition-all cursor-pointer min-w-0 overflow-hidden",
                   paymentMethod === "mobile"
-                    ? "border-primary bg-primary/3"
-                    : "border-border/40 bg-card/40 hover:border-primary/20",
+                    ? "border-[#240303] bg-[#fdf6f0] dark:bg-slate-800/80 shadow-2xs"
+                    : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:border-slate-300"
                 )}
               >
                 {paymentMethod === "mobile" && (
-                  <div className="absolute top-0 right-0 bg-primary text-white p-1 rounded-tr-xl rounded-bl-xl shadow-md z-10">
-                    <Check className="size-3.5 stroke-[4px]" />
+                  <div className="absolute top-0 right-0 bg-[#240303] text-white w-[26px] h-[22px] flex items-center justify-center rounded-bl-xl shadow-2xs z-10 animate-in fade-in duration-150">
+                    <Check className="size-3.5 stroke-[3px] text-white" />
                   </div>
                 )}
-                <Zap
+
+                <div
                   className={cn(
-                    "size-6 shrink-0",
+                    "size-4 rounded-full border flex items-center justify-center transition-all shrink-0",
                     paymentMethod === "mobile"
-                      ? "text-primary"
-                      : "text-muted-foreground",
+                      ? "border-[#240303]"
+                      : "border-slate-300 dark:border-slate-600"
                   )}
-                />
-                <span className="font-bold text-base flex-1 min-w-0 truncate">
-                  মোবাইল ব্যাংকিং
-                </span>
-                <div className="flex shrink-0 -space-x-2 pr-4">
-                  {["bkash", "nagad", "rocket"].map((p) => (
+                >
+                  {paymentMethod === "mobile" && (
+                    <div className="size-2 rounded-full bg-[#240303]" />
+                  )}
+                </div>
+                <Zap className="size-5 text-amber-500 shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold text-xs sm:text-sm text-slate-800 dark:text-slate-100 leading-tight">
+                    মোবাইল ব্যাংকিং
+                  </p>
+                  <p className="text-[10px] text-slate-400 mt-0.5">
+                    বিকাশ, নগদ বা রকেট
+                  </p>
+                </div>
+                <div className="flex -space-x-1.5 shrink-0 pr-4">
+                  {(["bkash", "nagad", "rocket"] as const).map((p) => (
                     <div
                       key={p}
-                      className="relative size-10 rounded-full bg-white shadow-sm ring-2 ring-white overflow-hidden flex items-center justify-center"
+                      className="relative size-6 rounded-full bg-white shadow-2xs border border-slate-200 overflow-hidden flex items-center justify-center"
                     >
                       <Image
                         src={`/payment-method-logo/${p}.${p === "rocket" ? "png" : "svg"}`}
                         alt={p}
                         fill
-                        className="object-contain p-1.5"
-                        sizes="40px"
+                        className="object-contain p-0.5"
+                        sizes="24px"
                       />
                     </div>
                   ))}
                 </div>
               </div>
             </div>
-          </div>
 
-          {/* Mobile Provider Selection UI */}
-          {paymentMethod === "mobile" && (
-            <div className="animate-in slide-in-from-top-2 duration-300 rounded-2xl bg-primary/2 border border-primary/20 p-6 space-y-7">
-              <RadioGroup className="grid grid-cols-3 gap-3">
-                {(["bkash", "nagad", "rocket"] as const).map((p) => (
-                  <div
-                    key={p}
-                    onClick={() => setValue("paymentProvider", p)}
-                    className={cn(
-                      "relative flex flex-col items-center p-4 rounded-xl border-2 transition-all cursor-pointer bg-white",
-                      paymentProvider === p
-                        ? "border-primary shadow-md scale-105"
-                        : "border-border/40 grayscale opacity-60 hover:grayscale-0 hover:opacity-100",
-                    )}
-                  >
-                    {paymentProvider === p && (
-                      <div className="absolute top-0 right-0 bg-primary text-white p-1 rounded-tr-xl rounded-bl-xl">
-                        <Check className="size-3 stroke-[4px]" />
+            {/* Mobile Banking Sub-panel */}
+            {paymentMethod === "mobile" && (
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-4 animate-in fade-in duration-200">
+                <div className="grid grid-cols-3 gap-2.5">
+                  {(["bkash", "nagad", "rocket"] as const).map((p) => (
+                    <div
+                      key={p}
+                      onClick={() => setValue("paymentProvider", p)}
+                      className={cn(
+                        "relative flex flex-col items-center p-3 rounded-lg border transition-all cursor-pointer bg-white dark:bg-slate-800 text-center overflow-hidden",
+                        paymentProvider === p
+                          ? "border-[#240303] shadow-2xs bg-[#fdf6f0] dark:bg-slate-800"
+                          : "border-slate-200 dark:border-slate-700 opacity-60 hover:opacity-100"
+                      )}
+                    >
+                      {paymentProvider === p && (
+                        <div className="absolute top-0 right-0 bg-[#240303] text-white w-[22px] h-[18px] flex items-center justify-center rounded-bl-lg shadow-2xs z-10 animate-in fade-in duration-150">
+                          <Check className="size-3 stroke-[3px] text-white" />
+                        </div>
+                      )}
+                      <div className="relative size-8 mb-1">
+                        <Image
+                          src={PAYMENT_ACCOUNTS[p].logo}
+                          alt={p}
+                          fill
+                          sizes="32px"
+                          className="object-contain"
+                        />
                       </div>
-                    )}
-                    <div className="relative size-12 mb-2">
-                      <Image
-                        src={PAYMENT_ACCOUNTS[p].logo}
-                        alt={p}
-                        fill
-                        sizes="48px"
-                        className="object-contain"
-                      />
+                      <span className="text-[11px] font-bold capitalize text-slate-800 dark:text-slate-200">
+                        {p}
+                      </span>
                     </div>
-                    <p className="text-xs font-black uppercase tracking-widest">
-                      {p}
+                  ))}
+                </div>
+
+                <div className="p-3.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50/70 dark:bg-slate-800/40 flex items-center justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="text-[10px] uppercase font-bold text-slate-400">
+                      Send Money (Personal)
+                    </p>
+                    <p className="text-base sm:text-lg font-mono font-black text-slate-800 dark:text-slate-100 truncate">
+                      {PAYMENT_ACCOUNTS[paymentProvider]?.number}
                     </p>
                   </div>
-                ))}
-              </RadioGroup>
-
-              <div className="bg-white rounded-2xl p-6 border border-primary/10 space-y-4 shadow-sm">
-                <div className="text-center space-y-1">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                    Send Money (Personal)
-                  </p>
-                  <p className="text-sm font-medium">
-                    নিচের নাম্বারে{" "}
-                    <span className="font-black text-foreground">
-                      {formatPrice(grandTotal)}
-                    </span>{" "}
-                    সেন্ড মানি করুন:
-                  </p>
-                </div>
-
-                <div className="flex items-center justify-between gap-3 bg-slate-50 p-4 rounded-xl border border-slate-100 group overflow-hidden">
-                  <p
-                    className={cn(
-                      "text-lg sm:text-2xl font-mono font-black tracking-wide min-w-0 truncate",
-                      PAYMENT_ACCOUNTS[paymentProvider]?.color,
-                    )}
-                  >
-                    {PAYMENT_ACCOUNTS[paymentProvider]?.number}
-                  </p>
                   <Button
                     type="button"
+                    variant="outline"
                     size="sm"
-                    onClick={() =>
-                      handleCopy(PAYMENT_ACCOUNTS[paymentProvider].number)
-                    }
-                    className="shrink-0 h-9 px-4 rounded-lg text-xs font-black uppercase tracking-wider"
+                    onClick={() => handleCopy(PAYMENT_ACCOUNTS[paymentProvider].number)}
+                    className="h-8 px-3 rounded-md text-xs font-bold shrink-0 border-slate-300 dark:border-slate-600 hover:border-[#240303] cursor-pointer"
                   >
-                    {copied ? "Copied" : "Copy"}
+                    <Copy className="size-3 mr-1" />
+                    {copied ? "কপি হয়েছে" : "কপি"}
                   </Button>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-[11px] font-bold uppercase tracking-widest ml-1 text-muted-foreground">
-                    আপনার নম্বর
-                  </Label>
-                  <Input
-                    {...register("senderNumber")}
-                    placeholder="01XXXXXXXXX"
-                    className="h-12 rounded-xl text-base"
-                  />
-                  <p className="text-[10px] text-muted-foreground font-medium ml-1">
-                    যে নাম্বার থেকে টাকা পাঠিয়েছেন
-                  </p>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[11px] font-bold uppercase tracking-widest ml-1 text-muted-foreground">
-                    Transaction ID (TrxID)
-                  </Label>
-                  <Input
-                    {...register("transactionId")}
-                    placeholder="8N7X2W..."
-                    className="h-12 rounded-xl text-base"
-                  />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      আপনার প্রেরক নম্বর <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      {...register("senderNumber")}
+                      placeholder="01XXXXXXXXX"
+                      className="h-9 rounded-md text-sm bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:border-[#240303] focus:ring-0 focus-visible:ring-0 focus:outline-none"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      Transaction ID (TrxID) <span className="text-red-500">*</span>
+                    </Label>
+                    <Input
+                      {...register("transactionId")}
+                      placeholder="e.g. 9J8X72W..."
+                      className="h-9 rounded-md text-sm uppercase bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 focus:border-[#240303] focus:ring-0 focus-visible:ring-0 focus:outline-none"
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* ✅ Customer Notes — moved here from nowhere, was missing */}
-          <div className="space-y-2">
-            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
-              অতিরিক্ত নোট (ঐচ্ছিক)
+          {/* Section 4: Customer Notes (Optional) */}
+          <div className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-xs space-y-2 min-w-0">
+            <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              অতিরিক্ত নোট বা নির্দেশনা (ঐচ্ছিক)
             </Label>
             <Textarea
               {...register("customerNotes")}
-              placeholder="ডেলিভারি সম্পর্কে বিশেষ কোনো নির্দেশনা..."
-              className="min-h-20 rounded-xl bg-background/50 resize-none text-base"
+              placeholder="ডেলিভারি বা সময় সম্পর্কে বিশেষ কোনো নির্দেশনা থাকলে এখানে লিখুন..."
+              className="min-h-16 rounded-lg text-sm bg-white dark:bg-slate-800 border-slate-300 dark:border-slate-700 resize-none p-2.5 leading-relaxed focus:border-[#240303] focus:ring-0 focus-visible:ring-0 focus:outline-none"
             />
           </div>
         </div>
 
-        {/* Right Side: Order Summary */}
-        <div className="lg:col-span-5 xl:col-span-4">
-          <div className="lg:sticky lg:top-24 rounded-[2rem] border border-border/40 bg-card/40 backdrop-blur-xl p-6 sm:p-8 shadow-xl space-y-6">
-            <h2 className="text-base font-black uppercase tracking-widest border-b border-border/40 pb-4">
-              অর্ডার সামারি
-            </h2>
+        {/* ── Right Side: Order Summary Card (Ant Design Architecture) ── */}
+        <div className="lg:col-span-5 xl:col-span-4 min-w-0">
+          <div className="lg:sticky lg:top-20 rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 sm:p-6 shadow-xs space-y-4 min-w-0">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white">
+                অর্ডার সামারি
+              </h2>
+              <span className="text-xs text-slate-500 font-medium">
+                {cart.items.length}টি আইটেম
+              </span>
+            </div>
 
-            <div className="space-y-5 max-h-87.5 overflow-y-auto pr-2 custom-scrollbar">
+            {/* Cart items list */}
+            <div className="space-y-3 max-h-60 overflow-y-auto pr-1 custom-scrollbar border-b border-slate-100 dark:border-slate-800 pb-3 min-w-0">
               {cart.items.map((item) => (
                 <div
-                  key={`${item.product._id}-${item.color || ''}-${item.size || ''}`}
-                  className="flex gap-4 items-center group"
+                  key={`${item.product._id}-${item.color || ""}-${item.size || ""}`}
+                  className="flex items-start gap-3 min-w-0"
                 >
-                  <div className="relative size-16 rounded-xl overflow-hidden shrink-0 border border-border/40 aspect-square shadow-sm">
+                  <div className="relative size-12 rounded-lg overflow-hidden shrink-0 border border-slate-200 dark:border-slate-700 aspect-square bg-slate-50">
                     <Image
                       src={item.product.thumbnail}
                       alt={item.product.title}
                       fill
-                      sizes="64px"
+                      sizes="48px"
                       className="object-cover"
                     />
-                    <span className="absolute top-0 right-0 bg-primary text-white text-[9px] font-black px-2 py-0.5 rounded-bl-lg shadow-md">
-                      x{item.itemQuantity}
+                    <span className="absolute top-0 right-0 bg-[#240303] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-bl">
+                      ×{item.itemQuantity}
                     </span>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-[13px] font-bold leading-snug line-clamp-2 uppercase tracking-tight group-hover:text-primary transition-colors">
+                    <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate leading-snug">
                       {item.product.title}
                     </h4>
                     {(item.color || item.size) && (
-                      <p className="text-[10px] text-muted-foreground font-semibold mt-0.5">
+                      <p className="text-[10px] text-slate-400 mt-0.5 truncate">
                         {[item.color && `কালার: ${item.color}`, item.size && `সাইজ: ${item.size}`].filter(Boolean).join(" | ")}
                       </p>
                     )}
-                    <p className="text-xs font-black text-primary mt-1">
-                      {formatPrice(
-                        item.product.salePrice || item.product.regularPrice,
-                      )}
+                    <p className="text-xs font-semibold text-[#240303] dark:text-[#E5B869] mt-0.5">
+                      {formatPrice(item.product.salePrice || item.product.regularPrice)}
                     </p>
                   </div>
-                  <p className="text-sm font-black">
+                  <p className="text-xs font-bold text-slate-900 dark:text-white shrink-0">
                     {formatPrice(item.subtotal)}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="bg-foreground/3 p-5 rounded-2xl border border-border/20 space-y-4">
-              <div className="flex justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
+            {/* Calculation details */}
+            <div className="space-y-2 text-xs">
+              <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
                 <span>সাবটোটাল</span>
-                <span className="text-foreground">
+                <span className="font-bold text-slate-900 dark:text-white">
                   {formatPrice(cart.total)}
                 </span>
               </div>
-              <div className="flex justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
                 <span>ডেলিভারি চার্জ</span>
-                <span className="text-foreground">
+                <span className="font-bold text-[#240303] dark:text-[#E5B869]">
                   + {formatPrice(deliveryCharge)}
-                </span>
-              </div>
-              <Separator className="bg-border/20" />
-              <div className="flex justify-between items-end pt-1">
-                <span className="text-xs font-black uppercase text-primary tracking-widest">
-                  সর্বমোট
-                </span>
-                <span className="text-3xl font-black text-primary tracking-tighter leading-none">
-                  {formatPrice(grandTotal)}
                 </span>
               </div>
             </div>
 
+            {/* Grand Total Row */}
+            <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-between items-baseline mb-2 min-w-0">
+              <div className="min-w-0">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block">
+                  সর্বমোট
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  (ডেলিভারি চার্জ সহ)
+                </span>
+              </div>
+              <span className="text-2xl font-black text-[#240303] dark:text-[#f87171] shrink-0">
+                {formatPrice(grandTotal)}
+              </span>
+            </div>
+
+            {/* Primary Submit Button (Deep Brownish Maroon Gradient) */}
             <Button
               disabled={isSubmitting}
               type="submit"
-              className="w-full h-14 rounded-2xl text-base font-black uppercase tracking-widest shadow-xl shadow-primary/20 active:scale-[0.98] transition-all group"
+              className="w-full h-12 rounded-lg text-sm sm:text-base font-bold bg-gradient-to-r from-[#1A0101] via-[#240303] to-[#1E0202] hover:from-[#240303] hover:to-[#2D0505] text-white border-none shadow-xs active:scale-[0.98] transition-all cursor-pointer group"
             >
               {isSubmitting ? (
-                <Loader2 className="animate-spin size-6" />
+                <Loader2 className="animate-spin size-5" />
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-2">
                   <span>অর্ডার কনফার্ম করুন</span>
-                  <ArrowRight className="size-5 group-hover:translate-x-1.5 transition-transform" />
+                  <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
                 </div>
               )}
             </Button>
 
-            <div className="flex justify-center gap-6 py-2 opacity-40">
-              <ShieldCheck className="size-5" />
-              <Truck className="size-5" />
-              <PackageCheck className="size-5" />
+            {/* Trust Assurances Icons */}
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-3 gap-2 text-center">
+              <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-slate-50/60 dark:bg-slate-800/40">
+                <ShieldCheck className="size-4 text-[#240303] dark:text-[#E5B869]" />
+                <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300">১০০% খাঁটি পণ্য</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-slate-50/60 dark:bg-slate-800/40">
+                <Package className="size-4 text-emerald-600" />
+                <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300">ক্যাশ অন ডেলিভারি</span>
+              </div>
+              <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-slate-50/60 dark:bg-slate-800/40">
+                <RotateCcw className="size-4 text-amber-600" />
+                <span className="text-[10px] font-semibold text-slate-600 dark:text-slate-300">৭ দিনের রিটার্ন</span>
+              </div>
             </div>
           </div>
         </div>

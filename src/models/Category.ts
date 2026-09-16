@@ -17,5 +17,8 @@ const CategorySchema = new Schema<ICategory & Document>(
 
 CategorySchema.index({ parent: 1 });
 
-export default models.Category ||
+const Category =
+  models.Category ||
   model<ICategory & Document>("Category", CategorySchema);
+
+export default Category;

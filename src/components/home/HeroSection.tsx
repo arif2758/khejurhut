@@ -111,7 +111,7 @@ export default function HeroSection({ featuredProducts }: HeroSectionProps) {
           </Link>
           {/* ডিসকাউন্ট ব্যাজ */}
           {discount > 0 && (
-            <div className="absolute top-1.5 left-1.5 bg-gradient-to-r from-[#1A0101] to-[#280404] text-[#E5B869] text-[9px] md:text-xs font-bold px-1.5 py-0.5 rounded-md z-20 shadow-md">
+            <div className="absolute top-2 left-2 bg-gradient-to-r from-[#1A0101] to-[#280404] text-[#E5B869] text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-md z-20 shadow-sm border border-[#C59B27]/20">
               -{discount}%
             </div>
           )}
@@ -167,10 +167,10 @@ export default function HeroSection({ featuredProducts }: HeroSectionProps) {
                   );
                 }}
                 className={cn(
-                  "ml-auto shrink-0 h-6 md:h-8 px-2.5 md:px-3 rounded-full shadow-lg transition-all active:scale-95 flex items-center gap-1",
+                  "ml-auto shrink-0 h-6 md:h-8 px-2.5 md:px-3 rounded-full shadow-md transition-all active:scale-95 flex items-center gap-1",
                   isInCart
-                    ? "bg-[#1A0505]/50 text-[#D4A373] backdrop-blur-md shadow-md cursor-default"
-                    : "bg-gradient-to-r from-[#1A0101] to-[#260404] text-[#FAF6F0] hover:from-[#240303] hover:to-[#2F0505] shadow-md hover:shadow-[#1A0101]/40",
+                    ? "bg-white text-[#240303] shadow-sm cursor-default"
+                    : "bg-gradient-to-r from-[#1A0101] to-[#260404] text-[#FAF6F0] hover:from-[#240303] hover:to-[#2F0505] shadow-md hover:shadow-[#1A0101]/40 border-none",
                   addingId === product._id.toString() &&
                     "opacity-50 pointer-events-none",
                 )}
@@ -180,7 +180,7 @@ export default function HeroSection({ featuredProducts }: HeroSectionProps) {
                 ) : isInCart ? (
                   <Check className="h-3 w-3 md:h-4 md:w-4 text-[#C59B27]" />
                 ) : (
-                  <ShoppingCart className="h-3 w-3 md:h-4 md:w-4 text-[#D4A373]" />
+                  <ShoppingCart className="size-3.5 text-[#D4A373]" />
                 )}
                 <span className="text-[9px] md:text-xs font-bold">
                   {isInCart ? "যোগ হয়েছে" : "কিনুন"}
@@ -195,19 +195,21 @@ export default function HeroSection({ featuredProducts }: HeroSectionProps) {
 
   return (
     <section className="py-3 md:py-4">
-      <div className="container mx-auto px-3 md:px-4">
+      <div className="max-w-7xl mx-auto px-3 md:px-4">
         <div className="relative group">
           <button
             onClick={scrollPrev}
-            className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 h-8 w-8 md:h-10 md:w-10 rounded-full bg-black/30 backdrop-blur-md border border-white/20 shadow-lg hover:bg-black/50 transition-all opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 items-center justify-center"
+            className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 z-20 h-9 w-9 md:h-10 md:w-10 rounded-full bg-white dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 shadow-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-all opacity-0 group-hover:opacity-100 translate-x-3 group-hover:translate-x-0 items-center justify-center"
+            aria-label="Previous slide"
           >
-            <ChevronLeft className="h-4 w-4 md:h-5 md:w-5 text-white" />
+            <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
           </button>
           <button
             onClick={scrollNext}
-            className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 h-8 w-8 md:h-10 md:w-10 rounded-full bg-black/30 backdrop-blur-md border border-white/20 shadow-lg hover:bg-black/50 transition-all opacity-0 group-hover:opacity-100 -translate-x-4 group-hover:translate-x-0 items-center justify-center"
+            className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 z-20 h-9 w-9 md:h-10 md:w-10 rounded-full bg-white dark:bg-slate-800 text-slate-800 dark:text-white border border-slate-200 dark:border-slate-700 shadow-md hover:bg-slate-50 dark:hover:bg-slate-700 transition-all opacity-0 group-hover:opacity-100 -translate-x-3 group-hover:translate-x-0 items-center justify-center"
+            aria-label="Next slide"
           >
-            <ChevronRight className="h-4 w-4 md:h-5 md:w-5 text-white" />
+            <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
           </button>
           <div className="overflow-hidden rounded-xl" ref={emblaRef}>
             <div className="flex -ml-2 md:-ml-4">

@@ -36,7 +36,7 @@ export function WhatsAppOrderButton({
   const total = price * quantity;
 
   const message =
-    `*GadgeterHub Order* 🛍️\n\n` +
+    `*খেজুর হাট অর্ডার* 🛍️\n\n` +
     `📦 প্রোডাক্ট: ${product.title}\n` +
     (color ? `🎨 কালার: ${color}\n` : "") +
     (size ? `📐 সাইজ: ${size}\n` : "") +
@@ -52,69 +52,19 @@ export function WhatsAppOrderButton({
       href={whatsappUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative flex w-full items-center gap-3 h-14 px-4 rounded-2xl overflow-hidden text-white select-none
-                 transition-all duration-300
-                 hover:scale-[1.015] hover:-translate-y-px
-                 active:scale-[0.97] active:translate-y-0"
-      style={{
-        background:
-          "linear-gradient(135deg, #064e3b 0%, #065f46 25%, #047857 60%, #059669 100%)",
-        boxShadow:
-          "0 6px 28px rgba(5,150,105,0.45), 0 2px 8px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.12)",
-      }}
+      className="flex w-full items-center justify-between h-11 px-4 rounded-lg bg-[#25D366] hover:bg-[#20bd5a] text-white select-none transition-colors border border-emerald-600/30 shadow-2xs group"
     >
-      {/* Shimmer sweep on hover */}
-      <span
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"
-        style={{
-          background:
-            "linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.18) 50%, transparent 100%)",
-        }}
-      />
-
-      {/* ── Left: WhatsApp icon in circle badge ── */}
-      <span
-        className="relative flex items-center justify-center size-10 rounded-full shrink-0 transition-transform duration-300 group-hover:scale-110"
-        style={{
-          background: "rgba(255,255,255,0.15)",
-          border: "1.5px solid rgba(255,255,255,0.3)",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-        }}
-      >
+      <div className="flex items-center gap-2.5">
         <WhatsAppSVG />
-      </span>
-
-      {/* ── Center: Main + sub text ── */}
-      <div className="relative flex-1 min-w-0">
-        <p className="text-[13px] font-black leading-tight tracking-tight whitespace-nowrap">
-          WhatsApp এ অর্ডার করুন
-        </p>
-        <p className="text-[10px] mt-0.5 font-semibold whitespace-nowrap"
-           style={{ color: "rgba(255,255,255,0.70)" }}>
-          দ্রুত কনফার্মেশন পান
-        </p>
-      </div>
-
-      {/* ── Right: Total price badge ── */}
-      <div
-        className="relative flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-xl transition-all duration-300 group-hover:bg-white/25"
-        style={{
-          background: "rgba(255,255,255,0.15)",
-          border: "1px solid rgba(255,255,255,0.25)",
-        }}
-      >
-        <span className="text-xs font-black whitespace-nowrap">
-          ৳{total.toLocaleString()}
+        <span className="text-xs sm:text-sm font-bold tracking-tight">
+          WhatsApp-এ সরাসরি অর্ডার করুন
         </span>
-        <ArrowRight className="size-3.5 opacity-80 group-hover:translate-x-0.5 transition-transform duration-200" />
       </div>
 
-      {/* ── Live pulse dot ── */}
-      <span className="relative flex shrink-0">
-        <span className="animate-ping absolute inline-flex size-2 rounded-full bg-white/60" />
-        <span className="relative inline-flex size-2 rounded-full bg-white" />
-      </span>
+      <div className="flex items-center gap-1.5 bg-black/15 px-2.5 py-1 rounded-md text-xs font-bold">
+        <span>৳{total.toLocaleString()}</span>
+        <ArrowRight className="size-3 opacity-80 group-hover:translate-x-0.5 transition-transform" />
+      </div>
     </Link>
   );
 }

@@ -10,6 +10,9 @@ import {
   Briefcase,
   Loader2,
   X,
+  Check,
+  User,
+  Phone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +28,7 @@ export function AddressManager({
   const [addresses, setAddresses] =
     useState<IAddressSerializable[]>(initialAddresses);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [loading, setLoading] = useState<string | null>(null); // 'adding' or addressId
+  const [loading, setLoading] = useState<string | null>(null);
 
   // Form State for new/edit
   const [formData, setFormData] = useState({
@@ -66,19 +69,19 @@ export function AddressManager({
         setAddresses(data.addresses);
         setShowAddForm(false);
         resetForm();
-        toast.success("Address added successfully");
+        toast.success("ঠিকানা সফলভাবে সংরক্ষণ করা হয়েছে");
       } else {
-        toast.error(data.error || "Failed to add address");
+        toast.error(data.error || "ঠিকানা সংরক্ষণ করতে সমস্যা হয়েছে");
       }
-    } catch (err) {
-      toast.error(`Something went wrong ${err} `);
+    } catch {
+      toast.error("সার্ভার এরর, একটু পর আবার চেষ্টা করুন");
     } finally {
       setLoading(null);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this address?")) return;
+    if (!confirm("আপনি কি নিশ্চিতভাবে এই ঠিকানাটি মুছে ফেলতে চান?")) return;
     setLoading(id);
     try {
       const res = await fetch(`/api/user/addresses?id=${id}`, {
@@ -87,10 +90,10 @@ export function AddressManager({
       const data = await res.json();
       if (data.success) {
         setAddresses(data.addresses);
-        toast.success("Address deleted");
+        toast.success("ঠিকানা মুছে ফেলা হয়েছে");
       }
-    } catch (err) {
-      toast.error(`Failed to delete address ${err}`);
+    } catch {
+      toast.error("ঠিকানা মুছতে ব্যর্থ হয়েছে");
     } finally {
       setLoading(null);
     }
@@ -107,88 +110,88 @@ export function AddressManager({
       const data = await res.json();
       if (data.success) {
         setAddresses(data.addresses);
-        toast.success("Default address updated");
+        toast.success("ডিফল্ট ঠিকানা আপডেট হয়েছে");
       }
-    } catch (err) {
-      toast.error(`Failed to update default address ${err}`);
+    } catch {
+      toast.error("ডিফল্ট ঠিকানা আপডেট করতে ব্যর্থ হয়েছে");
     } finally {
       setLoading(null);
     }
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6">
       {/* Header with Add Button */}
       {!showAddForm && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-6 bg-white p-8 rounded-[2.5rem] border border-slate-200 shadow-sm relative overflow-hidden group">
-          <div className="absolute top-0 right-0 size-48 bg-primary/5 rounded-full blur-[60px] -mr-24 -mt-24 transition-transform group-hover:scale-125" />
-          <div className="flex items-center gap-4 relative z-10">
-            <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-              <MapPin className="size-6" />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="size-10 rounded-lg bg-[#fdf6f0] dark:bg-slate-800 flex items-center justify-center text-[#240303] dark:text-[#E5B869] shrink-0">
+              <MapPin className="size-5" />
             </div>
             <div>
-              <h3 className="font-black text-slate-900 uppercase tracking-tight">
-                Saved Addresses
+              <h3 className="font-bold text-sm sm:text-base text-slate-900 dark:text-white">
+                সংরক্ষিত ঠিকানাসমূহ
               </h3>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                {addresses.length} Addresses total
+              <p className="text-xs text-slate-400 dark:text-slate-500">
+                মোট {addresses.length} টি ঠিকানা সংরক্ষিত রয়েছে
               </p>
             </div>
           </div>
+
           <Button
             onClick={() => setShowAddForm(true)}
-            className="rounded-2xl px-8 h-14 font-black uppercase tracking-widest text-[10px] gap-2 shadow-xl shadow-primary/20 hover:scale-105 active:scale-95 transition-all w-full sm:w-auto"
+            className="rounded-lg px-4 h-10 bg-[#240303] hover:bg-[#3a0808] text-white text-xs sm:text-sm font-bold shadow-xs cursor-pointer w-full sm:w-auto"
           >
-            <Plus className="size-4" /> Add New Address
+            <Plus className="size-4 mr-1.5" /> নতুন ঠিকানা যোগ করুন
           </Button>
         </div>
       )}
 
       {/* Add New Address Form */}
       {showAddForm && (
-        <div className="bg-white p-8 sm:p-12 rounded-[2.5rem] border border-slate-200 shadow-2xl relative animate-in zoom-in-95 duration-300">
-          <div className="flex items-center justify-between mb-8">
-            <h3 className="text-xl font-black text-slate-900 tracking-tight">
-              Add New Address
+        <div className="bg-white dark:bg-slate-900 p-5 sm:p-6 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-xs animate-in zoom-in-95 duration-200">
+          <div className="flex items-center justify-between mb-5 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white">
+              নতুন ঠিকানা যুক্ত করুন
             </h3>
             <button
               onClick={() => setShowAddForm(false)}
-              className="size-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:text-slate-900 transition-colors"
+              className="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
             >
-              <X className="size-5" />
+              <X className="size-4" />
             </button>
           </div>
 
-          <form onSubmit={handleAdd} className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
-                  Label (e.g. Home, Office)
+          <form onSubmit={handleAdd} className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  ঠিকানার লেবেল (বাছাই করুন)
                 </label>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {["Home", "Office"].map((l) => (
                     <button
                       key={l}
                       type="button"
                       onClick={() => setFormData((p) => ({ ...p, label: l }))}
                       className={cn(
-                        "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                        "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer",
                         formData.label === l
-                          ? "bg-primary text-white shadow-lg"
-                          : "bg-slate-50 text-slate-400 hover:bg-slate-100",
+                          ? "bg-[#240303] text-white shadow-2xs"
+                          : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
                       )}
                     >
                       {l === "Home" ? (
-                        <Home className="size-3 inline mr-1" />
+                        <Home className="size-3.5 inline mr-1" />
                       ) : (
-                        <Briefcase className="size-3 inline mr-1" />
+                        <Briefcase className="size-3.5 inline mr-1" />
                       )}
-                      {l}
+                      {l === "Home" ? "বাসা (Home)" : "অফিস (Office)"}
                     </button>
                   ))}
                   <Input
-                    placeholder="Other"
-                    className="h-10 rounded-xl bg-slate-50 border-none font-bold text-xs px-4"
+                    placeholder="অন্যান্য (যেমন: শপ)"
+                    className="h-9 rounded-lg max-w-[160px] text-xs"
                     value={
                       formData.label !== "Home" && formData.label !== "Office"
                         ? formData.label
@@ -200,126 +203,117 @@ export function AddressManager({
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
-                  Full Name
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  প্রাপকের পূর্ণ নাম *
                 </label>
                 <Input
                   required
-                  placeholder="Enter name"
-                  className="h-14 rounded-2xl bg-slate-50 border-none font-bold text-base px-6"
+                  placeholder="নাম লিখুন"
+                  className="h-10 rounded-lg text-xs sm:text-sm"
                   value={formData.name}
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, name: e.target.value }))
                   }
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
-                  Phone Number
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  মোবাইল নম্বর *
                 </label>
                 <Input
                   required
                   placeholder="017XXXXXXXX"
-                  className="h-14 rounded-2xl bg-slate-50 border-none font-bold text-base px-6"
+                  className="h-10 rounded-lg text-xs sm:text-sm"
                   value={formData.phone}
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, phone: e.target.value }))
                   }
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
-                  Address Details
+
+              <div className="space-y-1.5 sm:col-span-2">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  বিস্তারিত ঠিকানা (বাসা/ফ্ল্যাট নং, রোড, এলাকা) *
                 </label>
                 <Input
                   required
-                  placeholder="House #, Road #, Area"
-                  className="h-14 rounded-2xl bg-slate-50 border-none font-bold text-base px-6"
+                  placeholder="ঠিকানা বিস্তারিত লিখুন..."
+                  className="h-10 rounded-lg text-xs sm:text-sm"
                   value={formData.addressLine1}
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, addressLine1: e.target.value }))
                   }
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
-                  City
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  শহর / থানা *
                 </label>
                 <Input
                   required
-                  placeholder="e.g. Dhaka"
-                  className="h-14 rounded-2xl bg-slate-50 border-none font-bold text-base px-6"
+                  placeholder="যেমন: মিরপুর, ঢাকা"
+                  className="h-10 rounded-lg text-xs sm:text-sm"
                   value={formData.city}
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, city: e.target.value }))
                   }
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
-                  District
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+                  জেলা *
                 </label>
                 <Input
                   required
-                  placeholder="e.g. Dhaka"
-                  className="h-14 rounded-2xl bg-slate-50 border-none font-bold text-base px-6"
+                  placeholder="যেমন: ঢাকা"
+                  className="h-10 rounded-lg text-xs sm:text-sm"
                   value={formData.district}
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, district: e.target.value }))
                   }
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-black uppercase text-slate-400 tracking-widest ml-1">
-                  Postal Code
-                </label>
-                <Input
-                  required
-                  placeholder="e.g. 1200"
-                  className="h-14 rounded-2xl bg-slate-50 border-none font-bold text-base px-6"
-                  value={formData.postalCode}
-                  onChange={(e) =>
-                    setFormData((p) => ({ ...p, postalCode: e.target.value }))
-                  }
-                />
-              </div>
             </div>
 
-            <label className="flex items-center gap-3 cursor-pointer group w-fit">
+            <label className="flex items-center gap-2 cursor-pointer pt-1 w-fit">
               <input
                 type="checkbox"
                 checked={formData.isDefault}
                 onChange={(e) =>
                   setFormData((p) => ({ ...p, isDefault: e.target.checked }))
                 }
-                className="size-5 rounded-md border-slate-300 text-primary focus:ring-primary/20"
+                className="size-4 rounded border-slate-300 text-[#240303] focus:ring-[#240303]"
               />
-              <span className="text-[10px] font-black uppercase text-slate-400 tracking-widest group-hover:text-slate-900 transition-colors">
-                Set as default address
+              <span className="text-xs font-semibold text-slate-600 dark:text-slate-400">
+                ডিফল্ট ডেলিভারি ঠিকানা হিসেবে সেট করুন
               </span>
             </label>
 
-            <div className="pt-6 flex gap-4">
+            <div className="pt-3 flex items-center gap-3">
               <Button
                 type="submit"
                 disabled={loading === "adding"}
-                className="h-14 px-10 rounded-2xl font-black uppercase tracking-widest text-[10px] gap-2 shadow-xl shadow-primary/20"
+                className="h-10 px-6 rounded-lg bg-[#240303] hover:bg-[#3a0808] text-white text-xs sm:text-sm font-bold shadow-xs cursor-pointer"
               >
                 {loading === "adding" ? (
-                  <Loader2 className="size-4 animate-spin" />
+                  <Loader2 className="size-4 animate-spin mr-1" />
                 ) : (
-                  <Plus className="size-4" />
+                  <Plus className="size-4 mr-1" />
                 )}
-                Add Address
+                ঠিকানা সংরক্ষণ করুন
               </Button>
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
                 onClick={() => setShowAddForm(false)}
-                className="h-14 px-10 rounded-2xl font-black uppercase tracking-widest text-[10px]"
+                className="h-10 px-5 rounded-lg text-xs sm:text-sm font-bold border-slate-200 dark:border-slate-700 cursor-pointer"
               >
-                Cancel
+                বাতিল
               </Button>
             </div>
           </form>
@@ -327,118 +321,113 @@ export function AddressManager({
       )}
 
       {/* Addresses Grid */}
-      <div className="grid sm:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {addresses.map((addr) => (
           <div
             key={addr._id}
             className={cn(
-              "bg-white p-8 rounded-[2.5rem] border-2 transition-all relative group overflow-hidden",
+              "bg-white dark:bg-slate-900 p-4 sm:p-5 rounded-xl border transition-all duration-200 relative overflow-hidden flex flex-col justify-between gap-4 shadow-xs",
               addr.isDefault
-                ? "border-primary shadow-xl shadow-primary/5"
-                : "border-slate-100 hover:border-slate-200",
+                ? "border-[#240303] dark:border-[#E5B869] bg-[#fdf6f0]/40 dark:bg-slate-800/40"
+                : "border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
             )}
           >
             {addr.isDefault && (
-              <div className="absolute top-0 right-0 py-2 px-6 bg-primary text-white text-[9px] font-black uppercase tracking-widest rounded-bl-3xl">
-                Default
+              <div className="absolute top-0 right-0 bg-[#240303] text-white px-3 py-1 text-[10px] font-bold rounded-bl-xl shadow-2xs flex items-center gap-1">
+                <Check className="size-3 stroke-[3px]" />
+                <span>ডিফল্ট</span>
               </div>
             )}
 
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="size-10 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-primary/10 group-hover:text-primary transition-all">
-                  {addr.label === "Home" ? (
-                    <Home className="size-5" />
-                  ) : addr.label === "Office" ? (
-                    <Briefcase className="size-5" />
+            <div className="space-y-3">
+              <div className="flex items-center gap-2.5">
+                <div className="size-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-700 dark:text-slate-300">
+                  {addr.label === "Office" ? (
+                    <Briefcase className="size-4" />
                   ) : (
-                    <MapPin className="size-5" />
+                    <Home className="size-4" />
                   )}
                 </div>
-                <h4 className="text-sm font-black text-slate-900 uppercase tracking-tight">
-                  {addr.label}
-                </h4>
-              </div>
-
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest leading-none">
-                    Name
-                  </p>
-                  <p className="text-sm font-black text-slate-900 truncate">
-                    {addr.name}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest leading-none">
-                    Phone
-                  </p>
-                  <p className="text-sm font-bold text-slate-700">
-                    {addr.phone}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest leading-none">
-                    Address
-                  </p>
-                  <p className="text-xs font-medium text-slate-500 leading-relaxed italic">
-                    {addr.addressLine1}, {addr.district}, {addr.city} -{" "}
-                    {addr.postalCode}
-                  </p>
+                <div>
+                  <h4 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white">
+                    {addr.label === "Home"
+                      ? "বাসা (Home)"
+                      : addr.label === "Office"
+                      ? "অফিস (Office)"
+                      : addr.label}
+                  </h4>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 pt-4 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                {!addr.isDefault && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    disabled={loading === addr._id}
-                    onClick={() => toggleDefault(addr._id)}
-                    className="h-9 px-4 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-primary/5 hover:text-primary text-slate-400"
-                  >
-                    Set Default
-                  </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  disabled={loading === addr._id || addr.isDefault}
-                  onClick={() => handleDelete(addr._id)}
-                  className="h-9 w-9 rounded-xl text-rose-400 hover:bg-rose-50 hover:text-rose-600 disabled:opacity-30"
-                  title={
-                    addr.isDefault
-                      ? "Cannot delete default address"
-                      : "Delete address"
-                  }
+              <div className="space-y-1 text-xs">
+                <div className="flex items-center gap-2 text-slate-800 dark:text-slate-200 font-semibold">
+                  <User className="size-3 text-slate-400 shrink-0" />
+                  <span>{addr.name}</span>
+                </div>
+                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                  <Phone className="size-3 text-slate-400 shrink-0" />
+                  <span>{addr.phone}</span>
+                </div>
+                <div className="text-slate-500 dark:text-slate-400 pl-5 leading-relaxed">
+                  {addr.addressLine1}
+                  {addr.city ? `, ${addr.city}` : ""}
+                  {addr.district ? `, ${addr.district}` : ""}
+                  {addr.postalCode ? ` - ${addr.postalCode}` : ""}
+                </div>
+              </div>
+            </div>
+
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 text-xs">
+              {!addr.isDefault ? (
+                <button
+                  type="button"
+                  disabled={loading === addr._id}
+                  onClick={() => toggleDefault(addr._id)}
+                  className="text-slate-600 hover:text-[#240303] dark:text-slate-400 dark:hover:text-[#E5B869] font-semibold text-[11px] underline underline-offset-2 cursor-pointer"
                 >
-                  <Trash2 className="size-4" />
-                </Button>
-              </div>
+                  ডিফল্ট করুন
+                </button>
+              ) : (
+                <span className="text-emerald-600 dark:text-emerald-400 font-bold text-[11px] flex items-center gap-1">
+                  <Check className="size-3" /> প্রাথমিক ঠিকানা
+                </span>
+              )}
+
+              <button
+                type="button"
+                disabled={loading === addr._id}
+                onClick={() => handleDelete(addr._id)}
+                className="inline-flex items-center gap-1 text-red-500 hover:text-red-700 font-semibold text-[11px] cursor-pointer ml-auto"
+              >
+                {loading === addr._id ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : (
+                  <Trash2 className="size-3" />
+                )}
+                <span>মুছুন</span>
+              </button>
             </div>
           </div>
         ))}
-
-        {addresses.length === 0 && !showAddForm && (
-          <div className="sm:col-span-2 text-center py-20 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100">
-            <div className="size-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-              <MapPin className="size-8 text-slate-300" />
-            </div>
-            <h3 className="text-lg font-black text-slate-900 mb-1">
-              No Address Found
-            </h3>
-            <p className="text-xs font-medium text-slate-500 mb-6 uppercase tracking-widest">
-              Add your shipping details to speed up checkout.
-            </p>
-            <Button
-              onClick={() => setShowAddForm(true)}
-              className="rounded-2xl h-12 px-8 font-black uppercase tracking-widest text-[10px] gap-2"
-            >
-              <Plus className="size-4" /> Add your first address
-            </Button>
-          </div>
-        )}
       </div>
+
+      {addresses.length === 0 && !showAddForm && (
+        <div className="text-center py-12 px-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-xs">
+          <MapPin className="size-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+          <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white mb-1">
+            কোনো ঠিকানা সংরক্ষণ করা নেই
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mb-4 max-w-xs mx-auto">
+            আপনার ডেলিভারি ঠিকানা যুক্ত করে রাখুন যাতে প্রতিবার চেকআউটে নতুন করে পূরণ করতে না হয়।
+          </p>
+          <Button
+            onClick={() => setShowAddForm(true)}
+            className="rounded-lg px-4 h-9 bg-[#240303] hover:bg-[#3a0808] text-white text-xs font-bold shadow-xs cursor-pointer"
+          >
+            <Plus className="size-3.5 mr-1" /> নতুন ঠিকানা যোগ করুন
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

@@ -70,58 +70,60 @@ export function AccountClaimForm({ orderNumber }: { orderNumber: string }) {
   };
 
   return (
-    <div className="mt-12 bg-primary/5 border border-primary/20 rounded-3xl p-6 sm:p-8 max-w-lg mx-auto text-left space-y-6">
-      <div className="flex items-center gap-4">
-        <div className="size-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
-          <UserPlus className="size-6" />
+    <div className="mt-8 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-xl p-5 sm:p-6 max-w-lg mx-auto text-left space-y-5 shadow-xs">
+      <div className="flex items-center gap-3.5 pb-3.5 border-b border-slate-100 dark:border-slate-800">
+        <div className="size-10 rounded-lg bg-[#fdf6f0] dark:bg-slate-800 flex items-center justify-center text-[#240303] dark:text-[#E5B869] shrink-0">
+          <UserPlus className="size-5" />
         </div>
         <div>
-          <h3 className="text-xl font-black tracking-tight">একাউন্ট তৈরি করুন (ঐচ্ছিক)</h3>
-          <p className="text-sm text-muted-foreground mt-1">
-            ভবিষ্যতে এক ক্লিকে অর্ডার করতে এবং সব অর্ডারের স্ট্যাটাস দেখতে আপনার ইমেইল দিয়ে একটি পাসওয়ার্ড সেট করুন।
+          <h3 className="text-base font-bold text-slate-900 dark:text-white">
+            একাউন্ট তৈরি করুন (ঐচ্ছিক)
+          </h3>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            ভবিষ্যতে এক ক্লিকে অর্ডার করতে ও স্ট্যাটাস দেখতে পাসওয়ার্ড সেট করুন।
           </p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-        <div className="space-y-2">
-          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
             ইমেইল
           </Label>
           <Input
             {...register("email")}
             type="email"
             placeholder="আপনার ইমেইল দিন"
-            className="h-12 rounded-xl bg-background"
+            className="h-10 rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-sm focus-visible:ring-[#240303]"
           />
           {errors.email && (
-            <p className="text-xs text-destructive font-bold">{errors.email.message}</p>
+            <p className="text-xs text-red-500 font-medium">{errors.email.message}</p>
           )}
         </div>
-        <div className="space-y-2">
-          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
+        <div className="space-y-1.5">
+          <Label className="text-xs font-semibold text-slate-700 dark:text-slate-300">
             নতুন পাসওয়ার্ড
           </Label>
           <Input
             {...register("password")}
             type="password"
             placeholder="কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড"
-            className="h-12 rounded-xl bg-background"
+            className="h-10 rounded-lg border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-800/50 text-sm focus-visible:ring-[#240303]"
           />
           {errors.password && (
-            <p className="text-xs text-destructive font-bold">{errors.password.message}</p>
+            <p className="text-xs text-red-500 font-medium">{errors.password.message}</p>
           )}
         </div>
         
         <Button
           disabled={isSubmitting}
           type="submit"
-          className="w-full h-12 rounded-xl text-sm font-bold shadow-lg shadow-primary/20"
+          className="w-full h-10 rounded-lg text-sm font-bold bg-[#240303] hover:bg-[#3a0808] text-white shadow-xs transition-all cursor-pointer"
         >
           {isSubmitting ? (
-            <Loader2 className="animate-spin size-5" />
+            <Loader2 className="animate-spin size-4" />
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center justify-center gap-2">
               <span>একাউন্ট তৈরি করে লিংক করুন</span>
               <ArrowRight className="size-4" />
             </div>

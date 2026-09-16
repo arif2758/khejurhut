@@ -123,23 +123,23 @@ export default function ProductCard({ product, priority = false }: { product: IP
   };
 
   return (
-    <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-card border border-[#2F0C0B]/12 shadow-[0_4px_16px_rgba(42,1,1,0.06)] hover:shadow-[0_12px_30px_rgba(42,1,1,0.14)] hover:border-[#2F0C0B]/30 transition-all duration-300 hover:-translate-y-1">
+    <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-[0_1px_3px_rgba(0,0,0,0.04),0_1px_2px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_28px_-6px_rgba(157,28,32,0.12),0_4px_8px_-4px_rgba(0,0,0,0.04)] hover:border-[#9D1C20]/40 transition-all duration-300 hover:-translate-y-1">
       {/* 1. Image Container */}
-      <div className="relative aspect-square w-full overflow-hidden rounded-t-2xl">
+      <div className="relative aspect-square w-full overflow-hidden rounded-t-2xl bg-slate-50 dark:bg-slate-950">
         <Link href={productHref} className="absolute inset-0 z-0 block">
           <Image
             src={product.thumbnail}
             alt={`${product.title} price in Bangladesh - GadgeterHub`}
             fill
             priority={priority}
-            className="object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
+            className="object-cover transition-transform duration-700 ease-in-out group-hover:scale-105"
             sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
           />
         </Link>
 
         {/* Discount Badge */}
         {discountPercentage > 0 && (
-          <div className="absolute left-3 top-3 z-10 px-2.5 py-1 rounded-full bg-gradient-to-r from-[#1A0101] to-[#280404] text-[#E5B869] text-[10px] font-black uppercase tracking-wider shadow-md">
+          <div className="absolute left-3 top-3 z-10 px-2.5 py-0.5 rounded-md bg-gradient-to-r from-[#1A0101] to-[#280404] text-[#E5B869] text-[11px] font-bold tracking-tight shadow-sm border border-[#C59B27]/20">
             {discountPercentage}% OFF
           </div>
         )}
@@ -150,23 +150,23 @@ export default function ProductCard({ product, priority = false }: { product: IP
             toggleWishlist({ productId: String(product._id) });
           }}
           className={cn(
-            "absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full bg-white/80 backdrop-blur-xl border border-[#2F0C0B]/20 transition-all duration-300 shadow-[0_4px_12px_rgba(0,0,0,0.1)] active:scale-90 hover:bg-white hover:border-[#2F0C0B]/40",
+            "absolute right-3 top-3 z-10 flex size-8 items-center justify-center rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 transition-all duration-300 shadow-sm active:scale-90 hover:bg-slate-50 hover:border-[#240303]/40",
             wishlistIds.includes(String(product._id))
               ? "text-rose-500 scale-105 shadow-rose-500/20 border-rose-500/30 bg-white"
-              : "text-[#2F0C0B]",
+              : "text-slate-600 dark:text-slate-300",
           )}
         >
           <Heart
             className={cn(
               "size-4 transition-all duration-300",
-              wishlistIds.includes(String(product._id)) && "fill-rose-500",
+              wishlistIds.includes(String(product._id)) && "fill-rose-500 text-rose-500",
             )}
           />
         </button>
 
         {/* Out of Stock Overlay */}
         {product.stockQuantity === 0 && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center bg-background/70 backdrop-blur-sm">
+          <div className="absolute inset-0 z-20 flex items-center justify-center bg-white/80 dark:bg-slate-900/80">
             <Badge
               variant="destructive"
               className="px-4 py-1.5 text-sm font-medium tracking-wide shadow-xl"
@@ -178,39 +178,39 @@ export default function ProductCard({ product, priority = false }: { product: IP
       </div>
 
       {/* 2. Content Container */}
-      <div className="flex flex-1 flex-col p-4 sm:p-5">
+      <div className="flex flex-1 flex-col p-4 sm:p-5 bg-white dark:bg-slate-900">
         <div className="mb-4 flex flex-1 flex-col">
           <div className="mb-1.5 flex items-start justify-between gap-3">
             <Link href={productHref} className="flex-1">
-              <h3 className="line-clamp-2 text-base sm:text-[17px] font-bold leading-tight text-[#120000] dark:text-foreground transition-colors group-hover:text-[#1A0101]">
+              <h3 className="line-clamp-2 text-base sm:text-[17px] font-bold leading-tight text-slate-900 dark:text-white transition-colors group-hover:text-[#240303]">
                 {product.title}
               </h3>
             </Link>
 
             {/* Rating right beside title */}
-            <div className="mt-0.5 flex shrink-0 items-center gap-1 text-xs font-semibold text-muted-foreground">
-              <Star className="size-3.5 fill-[#C59B27] text-[#C59B27]" />
+            <div className="mt-0.5 flex shrink-0 items-center gap-1 text-xs font-semibold text-slate-500">
+              <Star className="size-3.5 fill-amber-400 text-amber-400" />
               <span>{product.ratings?.average || "0.0"}</span>
             </div>
           </div>
 
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
+          <p className="line-clamp-2 text-sm leading-snug text-slate-500 dark:text-slate-400">
             {product.shortDesc}
           </p>
         </div>
 
         {/* Price & Actions */}
-        <div className="mt-auto flex items-end justify-between gap-2">
+        <div className="mt-auto flex items-end justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800">
           {/* Price Stack */}
           <div className="flex flex-col gap-0.5">
             {/* Sale Price FIRST */}
-            <span className="text-2xl font-black leading-none text-[#1A0101] dark:text-[#E5B869]">
+            <span className="text-xl sm:text-2xl font-black leading-none text-[#240303] dark:text-[#f87171]">
               {formatPrice(displayPrice)}
             </span>
 
             {/* Regular Price AFTER */}
             {discountPercentage > 0 && (
-              <span className="text-muted-foreground line-through text-sm tracking-widest">
+              <span className="text-slate-400 line-through text-xs sm:text-sm tracking-wide">
                 {formatPrice(product.regularPrice)}
               </span>
             )}
@@ -223,10 +223,10 @@ export default function ProductCard({ product, priority = false }: { product: IP
                 onClick={handleAddToCart}
                 disabled={product.stockQuantity === 0 || isActionPending}
                 className={cn(
-                  "flex h-9.5 items-center justify-center gap-1.5 rounded-xl px-3.5 text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 disabled:opacity-50 shadow-md",
+                  "flex h-9.5 items-center justify-center gap-1.5 rounded-xl px-3.5 text-xs sm:text-sm font-bold transition-all duration-200 active:scale-95 disabled:opacity-50 shadow-sm",
                   showSuccess
                     ? "bg-emerald-600 text-white"
-                    : "bg-gradient-to-r from-[#1A0101] via-[#240303] to-[#1E0202] hover:from-[#240303] hover:to-[#2D0505] text-[#FAF6F0] border border-[#C59B27]/30 shadow-[#1A0101]/30 hover:shadow-lg hover:shadow-[#1A0101]/40 hover:scale-[1.02]",
+                    : "bg-gradient-to-r from-[#1A0101] via-[#240303] to-[#1E0202] hover:from-[#240303] hover:to-[#2D0505] text-[#FAF6F0] border-none shadow-[#1A0101]/25 hover:shadow-md hover:shadow-[#1A0101]/35 hover:scale-[1.02]",
                 )}
               >
                 {showSuccess ? (

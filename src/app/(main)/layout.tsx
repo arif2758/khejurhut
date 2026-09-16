@@ -10,7 +10,7 @@ export default function MainLayout({
   return (
     <HydrationGuardProvider>
       <Header />
-      <main className="flex-1 pt-10">{children}</main>
+      <main className="flex-1 pt-0 w-full max-w-full overflow-x-clip">{children}</main>
     </HydrationGuardProvider>
   );
 }

@@ -13,26 +13,26 @@ import {
   Clock,
   CheckCircle2,
   ArrowRight,
-  Search,
   ShoppingBag,
+  ArrowLeft,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CHANNEL_LABELS } from "@/types/order";
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 
 const STATUS_STEPS = [
-  { id: "pending", label: "Pending", icon: Clock },
-  { id: "confirmed", label: "Confirmed", icon: CheckCircle2 },
-  { id: "processing", label: "Processing", icon: Package },
-  { id: "shipped", label: "Shipped", icon: Truck },
-  { id: "delivered", label: "Delivered", icon: CheckCircle2 },
+  { id: "pending", label: "অর্ডার গ্রহণ", icon: Clock },
+  { id: "confirmed", label: "নিশ্চিতকৃত", icon: CheckCircle2 },
+  { id: "processing", label: "প্রসেসিং", icon: Package },
+  { id: "shipped", label: "ডেলিভারিতে", icon: Truck },
+  { id: "delivered", label: "সম্পন্ন", icon: CheckCircle2 },
 ];
 
 export const metadata = {
-  title: "My Orders | GadgeterHub",
-  description: "Track your ongoing and past orders.",
+  title: "আমার অর্ডারসমূহ | খেজুর হাট | খেজুর",
+  description: "আপনার সকল অতীত ও বর্তমান অর্ডারের বিবরণ ও লাইভ ট্র্যাকিং স্ট্যাটাস।",
 };
 
 export const dynamic = "force-dynamic";
@@ -80,9 +80,11 @@ export default async function UserOrdersPage() {
   }
 
   await dbConnect();
-  
+
   // 1. Link guest orders by phone number
-  const dbUser = await User.findById(session.user.id).select("phone").lean<{ phone?: string }>();
+  const dbUser = await User.findById(session.user.id)
+    .select("phone")
+    .lean<{ phone?: string }>();
   if (dbUser?.phone) {
     await Order.updateMany(
       { user: { $exists: false }, customerPhone: dbUser.phone },
@@ -106,102 +108,111 @@ export default async function UserOrdersPage() {
   const orders = await getUserOrders(session.user.id!);
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-300">
       {guestOrdersVal && <ClearGuestOrdersCookie />}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-        <div className="space-y-1">
-          <h1 className="text-3xl font-black tracking-tight text-slate-900 flex items-center gap-3 lowercase first-letter:uppercase">
-            <ShoppingBag className="size-8 text-primary" />
-            My Orders
-          </h1>
-          <p className="text-slate-500 font-medium tracking-tight">
-            Review and track your recent purchases.
-          </p>
-        </div>
 
-        <div className="flex items-center gap-4">
-          <div className="bg-white px-5 py-3 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
-            <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-              {orders.length}
-            </div>
-            <p className="text-xs font-black uppercase tracking-widest text-slate-500">
-              Total Orders
+      {/* Header */}
+      <div className="space-y-3">
+        <Link
+          href="/dashboard"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-[#240303] dark:hover:text-[#E5B869] transition-colors"
+        >
+          <ArrowLeft className="size-3.5" />
+          <span>ড্যাশবোর্ডে ফিরুন</span>
+        </Link>
+
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 dark:text-white flex items-center gap-2.5">
+              <ShoppingBag className="size-6 sm:size-7 text-[#240303] dark:text-[#E5B869]" />
+              আমার অর্ডারসমূহ
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
+              আপনার সকল অতীত ও বর্তমান অর্ডারের বিবরণ ও লাইভ ট্র্যাকিং স্ট্যাটাস।
             </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#fdf6f0] dark:bg-slate-800 text-[#240303] dark:text-[#E5B869] border border-[#240303]/10 dark:border-slate-700">
+              মোট অর্ডার: {orders.length} টি
+            </span>
           </div>
         </div>
       </div>
 
-      <div className="space-y-8">
+      {/* Orders List */}
+      <div className="space-y-4 sm:space-y-5">
         {orders.map((order) => {
           const currentStatus = order.orderStatus || "pending";
           const currentStepIndex = STATUS_STEPS.findIndex(
-            (step) => step.id === currentStatus,
+            (step) => step.id === currentStatus
           );
 
           return (
             <div
               key={order._id}
-              className="bg-white rounded-[2rem] border border-slate-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-xs overflow-hidden transition-all duration-200 hover:border-[#240303]/30 dark:hover:border-slate-700"
             >
               {/* Order Info Header */}
-              <div className="p-6 sm:p-8 border-b border-slate-100 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50">
-                <div className="flex items-center gap-4">
-                  <div className="size-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-sm">
-                    <Package className="size-6 text-slate-400" />
+              <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4 bg-slate-50/50 dark:bg-slate-800/40">
+                <div className="flex items-center gap-3">
+                  <div className="size-10 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700 flex items-center justify-center shadow-2xs shrink-0">
+                    <Package className="size-5 text-[#240303] dark:text-[#E5B869]" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                      ORDER NUMBER
-                    </p>
+                    <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">
+                      অর্ডার নম্বর
+                    </span>
                     <div className="flex items-center gap-2">
-                      <p className="text-lg font-black text-slate-900 tracking-tight">
+                      <p className="text-sm sm:text-base font-mono font-bold text-slate-900 dark:text-white">
                         {order.orderNumber}
                       </p>
-                      {Boolean((order.vipPrivilege && order.vipPrivilege > 0) || (order.discount && order.discount > 0)) && (
-                        <span className="text-[9px] font-black bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full border border-amber-200">
-                          🌟 VIP
-                        </span>
+                      {Boolean(
+                        (order.vipPrivilege && order.vipPrivilege > 0) ||
+                          (order.discount && order.discount > 0)
                       )}
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-8 text-right">
+                <div className="flex items-center gap-6 text-right ml-auto">
                   <div className="hidden sm:block">
-                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                      PLACED ON
-                    </p>
-                    <p className="text-xs font-bold text-slate-700">
+                    <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">
+                      তারিখ
+                    </span>
+                    <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
                       {format(new Date(order.createdAt), "dd MMM, yyyy")}
                     </p>
                   </div>
                   <div>
-                    <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">
-                      {order.advancePaid && order.advancePaid > 0 ? "COD AMOUNT" : "TOTAL AMOUNT"}
+                    <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block">
+                      {order.advancePaid && order.advancePaid > 0
+                        ? "ক্যাশ অন ডেলিভারি"
+                        : "সর্বমোট মূল্য"}
+                    </span>
+                    <p className="text-sm sm:text-base font-black text-[#240303] dark:text-[#E5B869]">
+                      {formatPrice(
+                        Math.max(0, order.total - (order.advancePaid || 0))
+                      )}
                     </p>
-                    <p className="text-lg font-black text-primary tracking-tighter">
-                      {formatPrice(Math.max(0, order.total - (order.advancePaid || 0)))}
-                    </p>
-                    {Boolean(order.advancePaid && order.advancePaid > 0) && (
-                      <p className="text-[10px] font-bold text-blue-600">
-                        Adv Paid: {formatPrice(order.advancePaid || 0)}
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>
 
               {/* Tracking Progress */}
               {currentStatus !== "cancelled" && currentStatus !== "returned" ? (
-                <div className="p-6 sm:p-8 border-b border-slate-100">
-                  <div className="relative flex items-center justify-between">
-                    {/* Background Line */}
-                    <div className="absolute left-0 top-4 pt-0.5 w-full h-1 bg-slate-100 rounded-full" />
-                    {/* Active Line */}
+                <div className="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800">
+                  <div className="relative flex items-center justify-between max-w-2xl mx-auto">
+                    {/* Background Track Line */}
+                    <div className="absolute left-0 top-4 w-full h-0.5 bg-slate-200 dark:bg-slate-800" />
+                    {/* Active Track Line */}
                     <div
-                      className="absolute left-0 top-4 pt-0.5 h-1 bg-primary rounded-full transition-all duration-1000 ease-out"
+                      className="absolute left-0 top-4 h-0.5 bg-[#240303] dark:bg-[#E5B869] transition-all duration-500"
                       style={{
-                        width: `${Math.max(0, (currentStepIndex / (STATUS_STEPS.length - 1)) * 100)}%`,
+                        width: `${Math.max(
+                          0,
+                          (currentStepIndex / (STATUS_STEPS.length - 1)) * 100
+                        )}%`,
                       }}
                     />
 
@@ -212,27 +223,29 @@ export default async function UserOrdersPage() {
                       return (
                         <div
                           key={step.id}
-                          className="relative z-10 flex flex-col items-center gap-3"
+                          className="relative z-10 flex flex-col items-center gap-2"
                         >
                           <div
                             className={cn(
-                              "size-9 rounded-full flex items-center justify-center border-4 transition-all duration-500",
+                              "size-8 rounded-full flex items-center justify-center border-2 transition-all duration-300",
                               isCompleted
-                                ? "bg-primary border-white text-white shadow-lg shadow-primary/20 scale-110"
-                                : "bg-white border-slate-100 text-slate-300",
+                                ? "bg-[#240303] border-white dark:border-slate-900 text-white shadow-xs"
+                                : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-300 dark:text-slate-600"
                             )}
                           >
                             <step.icon
                               className={cn(
-                                "size-4",
-                                isCurrent && "animate-pulse",
+                                "size-3.5",
+                                isCurrent && "animate-pulse text-[#E5B869]"
                               )}
                             />
                           </div>
                           <p
                             className={cn(
-                              "text-[10px] font-black uppercase tracking-widest text-center max-w-[80px]",
-                              isCompleted ? "text-slate-900" : "text-slate-400",
+                              "text-[10px] sm:text-xs font-bold text-center",
+                              isCompleted
+                                ? "text-slate-900 dark:text-white"
+                                : "text-slate-400 dark:text-slate-500"
                             )}
                           >
                             {step.label}
@@ -243,46 +256,54 @@ export default async function UserOrdersPage() {
                   </div>
                 </div>
               ) : (
-                <div className="p-6 sm:p-8 border-b border-slate-100 flex items-center justify-center bg-rose-50">
-                  <p className="text-rose-600 font-bold uppercase tracking-widest text-sm">
-                    Order{" "}
-                    {currentStatus === "cancelled" ? "Cancelled" : "Returned"}
+                <div className="p-4 sm:p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-center bg-rose-50 dark:bg-rose-950/20">
+                  <p className="text-rose-600 dark:text-rose-400 font-bold text-xs uppercase tracking-wider">
+                    অর্ডার{" "}
+                    {currentStatus === "cancelled"
+                      ? "বাতিল করা হয়েছে (Cancelled)"
+                      : "ফেরত দেওয়া হয়েছে (Returned)"}
                   </p>
                 </div>
               )}
 
               {/* Items Summary & Link */}
-              <div className="p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-                <div className="flex -space-x-3 overflow-hidden">
-                  {order.items.slice(0, 4).map((item, idx) => (
-                    <div
-                      key={idx}
-                      className="relative size-12 rounded-xl border-2 border-white bg-slate-50 p-1 shadow-sm shrink-0"
-                    >
-                      <Image
-                        src={item.productImage || "/logo.png"}
-                        alt={item.productTitle}
-                        fill
-                        sizes="48px"
-                        className="object-contain p-1"
-                      />
-                    </div>
-                  ))}
-                  {order.items.length > 4 && (
-                    <div className="relative size-12 rounded-xl border-2 border-white bg-slate-900 flex items-center justify-center text-[10px] font-black text-white shadow-sm shrink-0">
-                      +{order.items.length - 4}
-                    </div>
-                  )}
+              <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex -space-x-2 overflow-hidden">
+                    {order.items.slice(0, 4).map((item, idx) => (
+                      <div
+                        key={idx}
+                        className="relative size-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 overflow-hidden shadow-2xs shrink-0"
+                      >
+                        <Image
+                          src={item.productImage || "/logo.png"}
+                          alt={item.productTitle}
+                          fill
+                          sizes="40px"
+                          className="object-contain p-0.5"
+                        />
+                      </div>
+                    ))}
+                    {order.items.length > 4 && (
+                      <div className="relative size-10 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold shadow-2xs shrink-0">
+                        +{order.items.length - 4}
+                      </div>
+                    )}
+                  </div>
+
+                  <span className="text-xs text-slate-500 dark:text-slate-400">
+                    {order.items.length} টি পণ্য
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-4 w-full sm:w-auto">
+                <div className="w-full sm:w-auto">
                   <Link
                     href={`/dashboard/my-orders/${order._id}`}
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto block"
                   >
-                    <button className="w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-900 font-black tracking-tight px-6 py-3 rounded-2xl border border-slate-200 transition-all group">
-                      Order Details
-                      <ArrowRight className="size-4 group-hover:translate-x-1 transition-transform" />
+                    <button className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold text-xs px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs transition-all cursor-pointer group">
+                      <span>অর্ডারের বিস্তারিত</span>
+                      <ChevronRight className="size-4 text-slate-400 group-hover:text-[#240303] dark:group-hover:text-[#E5B869] group-hover:translate-x-0.5 transition-transform" />
                     </button>
                   </Link>
                 </div>
@@ -291,20 +312,21 @@ export default async function UserOrdersPage() {
           );
         })}
 
+        {/* Empty State */}
         {orders.length === 0 && (
-          <div className="text-center py-24 bg-white rounded-[2.5rem] border-2 border-dashed border-slate-100">
-            <div className="size-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search className="size-10 text-slate-300" />
+          <div className="text-center py-16 px-4 bg-white dark:bg-slate-900 rounded-xl border border-slate-200/90 dark:border-slate-800 shadow-xs">
+            <div className="size-16 bg-[#fdf6f0] dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4 text-[#240303] dark:text-[#E5B869]">
+              <ShoppingBag className="size-8" />
             </div>
-            <h3 className="text-2xl font-black text-slate-900 mb-2">
-              No Orders Found
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1">
+              কোনো অর্ডার পাওয়া যায়নি
             </h3>
-            <p className="text-slate-500 font-medium mb-8">
-              You haven&apos;t placed any orders yet.
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-6 max-w-sm mx-auto">
+              আপনি এখনও কোনো অর্ডার করেননি। আমাদের প্রিমিয়াম খেজুর ও পণ্য ঘুরে দেখুন।
             </p>
-            <Link href="/">
-              <button className="bg-primary text-white font-black tracking-tight px-8 py-4 rounded-2xl shadow-lg shadow-primary/20 hover:scale-105 transition-all">
-                Start Shopping
+            <Link href="/products">
+              <button className="bg-[#240303] hover:bg-[#3a0808] text-white text-xs sm:text-sm font-bold px-6 py-2.5 rounded-lg shadow-xs transition-all cursor-pointer">
+                পণ্য ব্রাউজ করুন
               </button>
             </Link>
           </div>

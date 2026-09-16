@@ -107,138 +107,135 @@ function LoginFormInner() {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
-      <div className="bg-white/85 dark:bg-[#1A0505]/80 backdrop-blur-xl border border-[#2F0C0B]/12 dark:border-white/10 shadow-[0_32px_64px_-16px_rgba(42,1,1,0.08)] rounded-[2.5rem] p-8 sm:p-10 relative overflow-hidden">
-        <div className="absolute top-0 right-0 size-36 bg-[#C59B27]/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 size-36 bg-[#1A0101]/5 rounded-full blur-3xl -ml-16 -mb-16 pointer-events-none" />
-
-        <div className="relative space-y-6">
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl font-black tracking-tight text-[#120000] dark:text-foreground">
+    <div className="w-full max-w-[420px] mx-auto animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <div className="bg-white dark:bg-[#1a1f2c] border border-slate-200/80 dark:border-slate-800 shadow-[0_16px_40px_-12px_rgba(0,0,0,0.08)] rounded-[2rem] p-8 sm:p-10 relative">
+        <div className="space-y-6">
+          <div className="text-center space-y-1">
+            <h1 className="text-[26px] font-black tracking-tight text-slate-900 dark:text-white">
               লগইন করুন
             </h1>
-            <p className="text-sm font-medium text-[#5C4D4A] dark:text-[#A89A97]">
-              আপনার অ্যাকাউন্টে প্রবেশ করতে তথ্য দিন
+            <p className="text-sm font-medium text-slate-400 dark:text-slate-400">
+              আপনার অ্যাকাউন্টে প্রবেশ করুন
             </p>
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-            <div className="space-y-1.5">
-              <div className="relative group/field">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8C7A77] group-focus-within/field:text-[#1A0101] dark:group-focus-within/field:text-[#D4A373] transition-colors">
-                  <Mail className="size-4" />
-                </div>
-                <Input
-                  {...register("email")}
-                  placeholder="ইমেইল অ্যাড্রেস"
-                  className={cn(
-                    "h-14 pl-12 pr-4 bg-[#FAF7F2]/80 dark:bg-black/20 border-[#2F0C0B]/15 dark:border-white/10 rounded-2xl focus:bg-white dark:focus:bg-black/40 focus:border-[#C59B27] focus:ring-4 ring-[#C59B27]/15 transition-all text-sm font-bold text-[#120000] dark:text-white placeholder:text-[#8C7A77]/70",
-                    errors.email &&
-                      "border-rose-500 focus:ring-rose-500/10 bg-rose-50/30",
-                  )}
-                />
-              </div>
-              {errors.email && (
-                <p className="text-[11px] font-bold text-rose-500 ml-1">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
+          {/* Google Login on Top */}
+          <Button
+            type="button"
+            onClick={handleGoogleLogin}
+            variant="outline"
+            className="w-full h-12 rounded-xl border-slate-200 dark:border-slate-700 hover:bg-slate-50/80 dark:hover:bg-slate-800 bg-white dark:bg-slate-900/50 font-medium text-slate-700 dark:text-slate-200 flex items-center justify-center gap-2.5 shadow-2xs hover:shadow-xs active:scale-[0.99] transition-all text-sm"
+          >
+            <Image src="/google.svg" alt="Google" width={18} height={18} />
+            Continue with Google
+          </Button>
 
-            <div className="space-y-1.5">
-              <div className="relative group/field">
-                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#8C7A77] group-focus-within/field:text-[#1A0101] dark:group-focus-within/field:text-[#D4A373] transition-colors">
-                  <Lock className="size-4" />
-                </div>
-                <Input
-                  {...register("password")}
-                  type={showPassword ? "text" : "password"}
-                  placeholder="পাসওয়ার্ড"
-                  className={cn(
-                    "h-14 pl-12 pr-12 bg-[#FAF7F2]/80 dark:bg-black/20 border-[#2F0C0B]/15 dark:border-white/10 rounded-2xl focus:bg-white dark:focus:bg-black/40 focus:border-[#C59B27] focus:ring-4 ring-[#C59B27]/15 transition-all text-sm font-bold text-[#120000] dark:text-white placeholder:text-[#8C7A77]/70",
-                    errors.password &&
-                      "border-rose-500 focus:ring-rose-500/10 bg-rose-50/30",
-                  )}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-[#8C7A77] hover:text-[#120000] dark:hover:text-white transition-colors"
-                >
-                  {showPassword ? (
-                    <EyeOff className="size-4" />
-                  ) : (
-                    <Eye className="size-4" />
-                  )}
-                </button>
-              </div>
-              {errors.password && (
-                <p className="text-[11px] font-bold text-rose-500 ml-1">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-
-            <div className="flex items-center justify-between px-1">
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  {...register("rememberMe")}
-                  className="size-4 rounded-md border-[#2F0C0B]/20 text-[#1A0101] focus:ring-[#C59B27]/20 accent-[#1A0101] cursor-pointer"
-                />
-                <span className="text-xs font-bold text-[#5C4D4A] dark:text-[#A89A97] group-hover:text-[#120000] dark:group-hover:text-white transition-colors">
-                  মনে রাখুন
-                </span>
-              </label>
-              <Link
-                href="/forgot-password"
-                className="text-xs font-bold text-[#1A0101] dark:text-[#E5B869] hover:underline underline-offset-4 decoration-2"
-              >
-                পাসওয়ার্ড ভুলে গেছেন?
-              </Link>
-            </div>
-
-            <Button
-              disabled={isLoading}
-              className="w-full h-14 rounded-2xl text-base font-black shadow-xl shadow-[#1A0101]/20 hover:shadow-2xl hover:shadow-[#1A0101]/30 active:scale-[0.98] transition-all bg-gradient-to-r from-[#1A0101] via-[#240303] to-[#1E0202] hover:from-[#240303] hover:to-[#2D0505] text-[#FAF6F0] border-none gap-2"
-            >
-              {isLoading ? (
-                <Loader2 className="size-5 animate-spin text-[#D4A373]" />
-              ) : (
-                <>
-                  লগইন
-                  <ArrowRight className="size-5 text-[#D4A373]" />
-                </>
-              )}
-            </Button>
-          </form>
-
-          <div className="relative">
+          {/* Divider */}
+          <div className="relative my-5">
             <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t border-[#2F0C0B]/12 dark:border-white/10" />
+              <span className="w-full border-t border-slate-200/80 dark:border-slate-800" />
             </div>
-            <div className="relative flex justify-center text-xs uppercase font-black tracking-widest">
-              <span className="bg-[#FAF7F2] dark:bg-[#1A0505] px-3 py-0.5 rounded-full text-[#8C7A77] border border-[#2F0C0B]/8">
+            <div className="relative flex justify-center text-xs font-normal">
+              <span className="bg-white dark:bg-[#1a1f2c] px-3 text-slate-400">
                 অথবা
               </span>
             </div>
           </div>
 
-          <Button
-            onClick={handleGoogleLogin}
-            variant="outline"
-            className="w-full h-14 rounded-2xl border-[#2F0C0B]/15 dark:border-white/10 hover:bg-[#FAF7F2] dark:hover:bg-white/5 bg-white/80 dark:bg-black/20 text-[#120000] dark:text-white font-bold flex items-center justify-center gap-3 active:scale-[0.98] transition-all"
-          >
-            <Image src="/google.svg" alt="Google" width={20} height={20} />
-            Google দিয়ে এগিয়ে যান
-          </Button>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <div className="space-y-1">
+              <div className="relative group/field">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/field:text-[#240303] transition-colors">
+                  <Mail className="size-[18px]" />
+                </div>
+                <Input
+                  {...register("email")}
+                  placeholder="Email বা Username"
+                  className={cn(
+                    "h-12 pl-11 pr-4 bg-slate-50/70 dark:bg-slate-900/50 border-slate-200/90 dark:border-slate-800 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:border-[#240303] focus:ring-2 focus:ring-[#240303]/15 transition-all text-sm font-normal text-slate-800 dark:text-white placeholder:text-slate-400",
+                    errors.email &&
+                      "border-rose-500 focus:border-rose-500 focus:ring-rose-500/10 bg-rose-50/30",
+                  )}
+                />
+              </div>
+              {errors.email && (
+                <p className="text-[11px] font-medium text-rose-500 ml-1">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1">
+              <div className="relative group/field">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within/field:text-[#240303] transition-colors">
+                  <Lock className="size-[18px]" />
+                </div>
+                <Input
+                  {...register("password")}
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  className={cn(
+                    "h-12 pl-11 pr-11 bg-slate-50/70 dark:bg-slate-900/50 border-slate-200/90 dark:border-slate-800 rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:border-[#240303] focus:ring-2 focus:ring-[#240303]/15 transition-all text-sm font-normal text-slate-800 dark:text-white placeholder:text-slate-400",
+                    errors.password &&
+                      "border-rose-500 focus:border-rose-500 focus:ring-rose-500/10 bg-rose-50/30",
+                  )}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="size-[18px]" />
+                  ) : (
+                    <Eye className="size-[18px]" />
+                  )}
+                </button>
+              </div>
+              {errors.password && (
+                <p className="text-[11px] font-medium text-rose-500 ml-1">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between pt-1">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  {...register("rememberMe")}
+                  className="size-4 rounded border-slate-300 text-[#240303] focus:ring-[#240303]/20 accent-[#240303] cursor-pointer"
+                />
+                <span className="text-xs font-normal text-slate-600 dark:text-slate-400">
+                  মনে রাখুন
+                </span>
+              </label>
+              <Link
+                href="/forgot-password"
+                className="text-xs font-normal text-slate-600 dark:text-slate-400 hover:text-[#240303] transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
+
+            <Button
+              disabled={isLoading}
+              className="w-full h-12 rounded-xl text-sm font-bold shadow-md shadow-[#240303]/20 hover:shadow-lg hover:shadow-[#240303]/30 active:scale-[0.99] transition-all bg-[#240303] hover:bg-[#380606] active:bg-[#150101] text-white border-none mt-2"
+            >
+              {isLoading ? (
+                <Loader2 className="size-5 animate-spin text-white" />
+              ) : (
+                "লগইন করুন"
+              )}
+            </Button>
+          </form>
 
           <div className="text-center pt-2">
-            <p className="text-xs font-bold text-[#8C7A77]">
-              নতুন গ্রাহক?{" "}
+            <p className="text-xs font-normal text-slate-500">
+              অ্যাকাউন্ট নেই?{" "}
               <Link
                 href={`/register${callbackUrl ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
-                className="text-[#1A0101] dark:text-[#E5B869] font-black hover:underline underline-offset-4 decoration-2 ml-1"
+                className="text-slate-900 dark:text-white font-bold hover:text-[#240303] transition-colors ml-1"
               >
                 রেজিস্টার করুন
               </Link>

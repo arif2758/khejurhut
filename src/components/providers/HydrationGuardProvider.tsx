@@ -22,8 +22,8 @@ export default function HydrationGuardProvider({
     return (
       <div className="min-h-screen bg-background p-0 space-y-0 animate-in fade-in duration-700">
         {/* Navbar Skeleton - Matches NavbarClient (h-12) */}
-        <div className="fixed top-0 left-0 right-0 z-50 bg-card/40 backdrop-blur-xl h-12 border-b border-border/10">
-          <div className="container mx-auto flex h-full items-center justify-between px-4">
+        <div className="fixed top-0 left-0 right-0 z-50 w-full">
+          <div className="max-w-7xl mx-auto flex h-full items-center justify-between px-4">
             <div className="flex items-center gap-2">
               <Skeleton className="h-8 w-8 rounded-full" />
               <Skeleton className="h-6 w-32 rounded-md hidden sm:block" />

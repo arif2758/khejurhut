@@ -24,8 +24,15 @@ import { WhatsAppIcon } from "@/socialCustomSVGIcon/SocialCustomSVGIcon";
 
 const NAV_ITEMS = [
   { label: "Home", href: "/", icon: House },
-  { label: "Products", href: "/products", icon: ShoppingBag },
-  { label: "Offers", href: "/products?sale=true", icon: Tag },
+  /*
+   * [UI HIDE NOTE]:
+   * বর্তমানে আমাদের স্টোরে মাত্র ৫টি প্রোডাক্ট রয়েছে এবং তা হোমপেইজেই সরাসরি সুন্দরভাবে প্রদর্শিত হচ্ছে।
+   * তাই UI ক্লিন ও মিনিমালিস্টিক রাখতে আপাতত 'Products' ও 'Offers' অপশন দুটি মেন্যু থেকে কমেন্ট করে হাইড রাখা হয়েছে।
+   * পরবর্তীতে যখন প্রোডাক্টের সংখ্যা বৃদ্ধি পাবে, তখন নিচের লাইন দুটি আনকমেন্ট করলেই মেন্যুতে আবার দেখা যাবে।
+   * দ্রষ্টব্য: কোনো কোড বা রাউটিং মুছে ফেলা হয়নি। /products অথবা /products?sale=true রুটে সরাসরি ভিজিট করলে সব ঠিকঠাক কাজ করবে।
+   */
+  // { label: "Products", href: "/products", icon: ShoppingBag },
+  // { label: "Offers", href: "/products?sale=true", icon: Tag },
   { label: "Track Order", href: "/track-order", icon: PackageSearch },
   { label: "Contact", href: "/contact", icon: PhoneCall },
 ];
@@ -62,10 +69,10 @@ function NavLinks() {
             key={href}
             href={href}
             className={cn(
-              "relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200",
+              "relative flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200",
               active
-                ? "text-[#FAF6F0] bg-gradient-to-r from-[#1A0101] to-[#260404] border border-[#C59B27]/40 shadow-xs font-semibold"
-                : "text-[#2F0C0B]/80 hover:text-[#1A0101] hover:bg-white/60 border border-transparent",
+                ? "text-[#240303] dark:text-amber-400 bg-[#240303]/8 dark:bg-amber-400/10 border border-[#240303]/20 dark:border-amber-400/25 shadow-2xs font-bold"
+                : "text-slate-600 dark:text-slate-300 hover:text-[#240303] dark:hover:text-amber-400 hover:bg-slate-100/70 dark:hover:bg-slate-800/80 border border-transparent",
             )}
           >
             <Icon className="size-4" />
@@ -99,7 +106,7 @@ function MobileNavLinks({ onClose }: { onClose: () => void }) {
 
   return (
     <nav
-      className="container mx-auto px-4 py-3 space-y-1"
+      className="max-w-7xl mx-auto px-4 py-3 space-y-1"
       aria-label="Mobile navigation"
     >
       {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
@@ -112,14 +119,16 @@ function MobileNavLinks({ onClose }: { onClose: () => void }) {
             className={cn(
               "flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200",
               active
-                ? "text-[#FAF6F0] bg-gradient-to-r from-[#1A0101] to-[#260404] border border-[#C59B27]/40 shadow-sm font-semibold"
-                : "text-[#2F0C0B]/80 hover:text-[#1A0101] hover:bg-white/60",
+                ? "text-[#240303] dark:text-amber-400 bg-[#240303]/8 dark:bg-amber-400/10 border border-[#240303]/20 dark:border-amber-400/25 shadow-2xs font-bold"
+                : "text-slate-700 dark:text-slate-300 hover:text-[#240303] dark:hover:text-amber-400 hover:bg-slate-50 dark:hover:bg-slate-800",
             )}
           >
             <div
               className={cn(
                 "flex size-8 items-center justify-center rounded-lg transition-colors",
-                active ? "bg-[#FAF6F0]/20 text-[#FAF6F0]" : "bg-black/5 text-[#2F0C0B]",
+                active
+                  ? "bg-[#240303]/12 text-[#240303] dark:bg-amber-400/15 dark:text-amber-400"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500",
               )}
             >
               <Icon className="size-4" />
@@ -181,23 +190,30 @@ export default function NavbarClient() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-[#FAF7F2]/90 dark:bg-[#140202]/90 backdrop-blur-xl border-b border-[#2F0C0B]/10 dark:border-white/10 w-full h-12 shadow-xs">
-        <div className="container mx-auto flex h-full items-center justify-between px-4">
+      <header className="fixed top-0 left-0 right-0 z-50 w-full pointer-events-none border-none">
+        <div
+          className="w-full max-w-7xl mx-auto px-0 sm:px-4 pointer-events-auto"
+          style={{ maxWidth: "1280px" }}
+        >
+          <nav className="bg-white/98 dark:bg-slate-900/98 sm:rounded-b-2xl w-full h-14 border-none shadow-none">
+            <div className="w-full h-full flex items-center justify-between px-3 sm:px-4">
           {/* Logo */}
           <Link
             href="/"
-            className="flex items-center gap-1.5 transition-transform hover:scale-105 active:scale-95 shrink-0"
+            className="flex items-center gap-2 sm:gap-2.5 transition-transform hover:scale-105 active:scale-95 shrink-0"
             aria-label="খেজুর"
           >
-            <Image
-              src="/logo.png"
-              alt="খেজুর" 
-              width={512}
-              height={512}
-              priority
-              className="shrink-0 size-8 sm:size-9 object-contain"
-            /> 
-            <span className="text-[14px] xs:text-base sm:text-xl font-black tracking-tight text-primary whitespace-nowrap">
+            <div className="relative size-11 sm:size-12 rounded-full overflow-hidden shrink-0 border border-slate-200/80 dark:border-slate-700 shadow-xs bg-[#FAF8F5] flex items-center justify-center">
+              <Image
+                src="/logo.png"
+                alt="খেজুর" 
+                width={512}
+                height={512}
+                priority
+                className="size-full object-cover scale-110"
+              />
+            </div>
+            <span className="text-xl sm:text-2xl font-black tracking-tight whitespace-nowrap bg-clip-text text-transparent bg-linear-to-r from-[#240303] via-[#9D1C20] to-[#240303] dark:from-amber-200 dark:via-amber-400 dark:to-amber-200">
               খেজুর
             </span>
           </Link>
@@ -224,43 +240,51 @@ export default function NavbarClient() {
           </Suspense>
 
           {/* Actions */}
-          <div className="flex items-center gap-2.5 sm:gap-3">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 rounded-full hover:bg-accent/50 transition-all hover:scale-105 active:scale-95"
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            {/*
+             * [UI HIDE NOTE]:
+             * প্রোডাক্ট সংখ্যা কম (আপাতত ৫টি) হওয়ায় এবং সবগুলো প্রোডাক্ট হোমপেইজেই সহজে পাওয়া যাওয়ায়
+             * UI থেকে সাময়িকভাবে সার্চ বাটনটি কমেন্ট করে হাইড রাখা হয়েছে।
+             * পরবর্তীতে প্রোডাক্টের সংখ্যা বৃদ্ধি পেলে নিচের বাটনটি আনকমেন্ট করলেই সার্চ অপশনটি পুনরায় সক্রিয় হবে।
+             */}
+            {/*
+            <button
+              type="button"
+              className="size-9 rounded-full flex items-center justify-center text-slate-700 hover:text-[#240303] hover:bg-slate-100 dark:text-slate-200 dark:hover:text-amber-400 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 cursor-pointer"
               onClick={handleSearchToggle}
               aria-label="Search"
               aria-expanded={showSearch}
               aria-controls="navbar-search-dropdown"
             >
               {showSearch ? (
-                <X className="size-4" />
+                <X className="size-5 stroke-[1.75]" />
               ) : (
-                <Search className="size-4" />
+                <Search className="size-5 stroke-[1.75]" />
               )}
-            </Button>
+            </button>
+            */}
 
             <CartButton />
             <UserMenuButton />
 
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9 lg:hidden rounded-full hover:bg-accent/50 transition-all hover:scale-105 active:scale-95"
+            <button
+              type="button"
+              className="size-9 lg:hidden rounded-full flex items-center justify-center text-slate-700 hover:text-[#240303] hover:bg-slate-100 dark:text-slate-200 dark:hover:text-amber-400 dark:hover:bg-slate-800 transition-all hover:scale-105 active:scale-95 cursor-pointer"
               onClick={handleMobileToggle}
               aria-label="Toggle menu"
               aria-expanded={mobileOpen}
             >
               {mobileOpen ? (
-                <X className="size-4" />
+                <X className="size-5 stroke-[1.75]" />
               ) : (
-                <Menu className="size-4" />
+                <Menu className="size-5 stroke-[1.75]" />
               )}
-            </Button>
+            </button>
           </div>
         </div>
       </nav>
+    </div>
+  </header>
 
       {/* Route change listener */}
       <Suspense fallback={null}>
@@ -271,7 +295,7 @@ export default function NavbarClient() {
       {showSearch && (
         <div
           id="navbar-search-dropdown"
-          className="fixed top-12 left-0 right-0 z-60"
+          className="fixed top-14 left-0 right-0 z-60"
         >
           <SearchDropdown onClose={() => setShowSearch(false)} />
         </div>
@@ -281,12 +305,11 @@ export default function NavbarClient() {
       {mobileOpen && (
         <>
           <div
-            className="fixed inset-0 top-12 z-45 bg-black/60 animate-in fade-in duration-200 lg:hidden"
+            className="fixed inset-0 top-14 z-45 bg-black/50 animate-in fade-in duration-200 lg:hidden"
             onClick={() => setMobileOpen(false)}
           />
           <div
-            className="fixed top-12 left-0 right-0 z-55 lg:hidden bg-popover/95 shadow-2xl animate-in slide-in-from-top-2 duration-200"
-            style={{ backdropFilter: "blur(30px) saturate(180%)" }}
+            className="fixed top-14 left-0 right-0 z-55 lg:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 shadow-xl animate-in slide-in-from-top-2 duration-200"
           >
             <Suspense
               fallback={
@@ -308,11 +331,10 @@ export default function NavbarClient() {
           href="https://wa.me/8801568390014"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex size-11 items-center justify-center rounded-full bg-[#25D366]/20 backdrop-blur-xl border border-[#25D366]/30 text-[#25D366] shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 hover:bg-[#25D366]/30 group"
+          className="flex size-11 items-center justify-center rounded-full bg-[#25D366] text-white shadow-xl transition-all duration-300 hover:scale-110 active:scale-95 hover:bg-[#20ba5a] group"
           aria-label="Chat on WhatsApp"
         >
-          <div className="absolute inset-0 rounded-full bg-[#25D366]/10 animate-ping group-hover:hidden" />
-          <WhatsAppIcon className="size-6 relative z-10" />
+          <WhatsAppIcon className="size-6 relative z-10 text-white" />
         </Link>
 
         {/* Scroll to Top */}

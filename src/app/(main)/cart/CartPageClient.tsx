@@ -3,7 +3,6 @@
 
 import { useCart } from "@/hooks/useCart";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -13,7 +12,9 @@ import {
   PackageX,
   Truck,
   ShieldCheck,
-  Cpu,
+  RotateCcw,
+  Package,
+  ChevronRight,
 } from "lucide-react";
 import { formatPrice } from "@/lib/priceUtils";
 import QuantitySelector from "@/components/products/QuantitySelector";
@@ -30,10 +31,6 @@ export default function CartPageClient() {
     isAdding,
   } = useCart();
 
-  const getCategorySlug = (product: IPopulatedCartItem["product"]): string => {
-    return product.category?.slug || "uncategorized";
-  };
-
   // ✅ Prevent flash of "আপনার কার্ট খালি" UI while items exist or are being fetched/added
   const isPendingCartDetails =
     isLoadingCart ||
@@ -43,35 +40,38 @@ export default function CartPageClient() {
 
   if (isPendingCartDetails) {
     return (
-      <div className="container mx-auto px-4 py-20 text-center">
+      <div className="w-full max-w-7xl mx-auto px-4 py-16 text-center">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="size-24 bg-muted rounded-full mb-6"></div>
-          <div className="h-8 w-48 bg-muted rounded mb-3"></div>
-          <div className="h-4 w-64 bg-muted rounded"></div>
+          <div className="size-20 bg-slate-200 dark:bg-slate-800 rounded-full mb-4"></div>
+          <div className="h-6 w-40 bg-slate-200 dark:bg-slate-800 rounded mb-2"></div>
+          <div className="h-4 w-56 bg-slate-200 dark:bg-slate-800 rounded"></div>
         </div>
       </div>
     );
   }
 
+  // Ant Design Empty State
   if (!cart.items || cart.items.length === 0) {
     return (
-      <div className="container mx-auto px-4 py-20">
-        <div className="max-w-md mx-auto text-center">
-          <div className="size-24 mx-auto rounded-full bg-muted/50 backdrop-blur-[10px] flex items-center justify-center mb-6">
-            <PackageX className="size-12 text-muted-foreground" />
+      <div className="w-full max-w-7xl mx-auto px-4 py-16 sm:py-24">
+        <div className="max-w-md mx-auto text-center bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-xl p-8 sm:p-12 shadow-xs">
+          <div className="size-20 mx-auto rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-5 text-slate-400">
+            <PackageX className="size-10" />
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-bold mb-3">
-            আপনার কার্ট খালি
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white mb-2">
+            আপনার কার্ট বর্তমানে খালি
           </h1>
-          <p className="text-muted-foreground mb-8 text-sm sm:text-base">
-            এখনো কোনো প্রিমিয়াম গ্যাজেট যোগ করা হয়নি। এখনই আপনার পছন্দের
-            কালেকশন দেখুন!
+          <p className="text-slate-500 dark:text-slate-400 mb-6 text-xs sm:text-sm leading-relaxed">
+            এখনো কোনো খাঁটি ও প্রিমিয়াম খেজুর কার্টে যোগ করা হয়নি। আমাদের সেরা কালেকশন দেখতে এখনই শপ ভিজিট করুন!
           </p>
 
-          <Button asChild size="lg" className="rounded-full shadow-lg px-8">
+          <Button
+            asChild
+            className="h-11 px-6 rounded-lg font-bold text-sm bg-gradient-to-r from-[#1A0101] via-[#240303] to-[#1E0202] hover:from-[#240303] hover:to-[#2D0505] text-white border-none shadow-xs transition-all cursor-pointer"
+          >
             <Link href="/products">
-              <ShoppingBag className="mr-2 size-5" />
+              <ShoppingBag className="mr-2 size-4" />
               কেনাকাটা শুরু করুন
             </Link>
           </Button>
@@ -81,274 +81,319 @@ export default function CartPageClient() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 pb-32 lg:pb-12">
-      <div className="grid lg:grid-cols-3 gap-8 items-start">
-        {/* Left: Cart Items */}
-        <section className="lg:col-span-2 space-y-6" aria-label="কার্ট আইটেম">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl sm:text-4xl font-black tracking-tight flex items-baseline gap-3">
-              আপনার কার্ট
-              <span className="text-lg font-medium text-muted-foreground">
-                ({cart.items.length}টি পণ্য)
-              </span>
-            </h1>
-          </div>
+    <div className="w-full max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 pb-28 lg:pb-12 space-y-4 overflow-x-hidden min-w-0">
+      {/* ── Breadcrumbs (Ant Design Style) ── */}
+      <nav className="flex items-center gap-1.5 text-xs text-slate-500 overflow-x-auto whitespace-nowrap scrollbar-none py-1">
+        <Link href="/" className="hover:text-[#240303] dark:hover:text-[#E5B869] transition-colors shrink-0">
+          হোম
+        </Link>
+        <ChevronRight className="size-3 text-slate-400 shrink-0" />
+        <span className="text-slate-800 dark:text-slate-200 font-semibold truncate">
+          আপনার কার্ট
+        </span>
+      </nav>
 
-          <div className="space-y-4">
-            {cart.items.map((item: IPopulatedCartItem) => {
-              const product = item.product;
-              const itemKey = `${product._id}-${item.color || ""}-${item.size || ""}`;
-              const productHref = `/products/${product.category?.slug || "all"}/${product.slug}`;
-              const itemTotal = item.subtotal;
+      {/* ── Page Header (Ant Design Style, 100% Mobile Responsive) ── */}
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-1 min-w-0">
+        <div className="flex items-center gap-2 min-w-0">
+          <h1 className="text-lg sm:text-2xl font-bold text-slate-900 dark:text-white truncate">
+            আপনার কার্ট
+          </h1>
+          <span className="text-xs font-semibold text-[#240303] dark:text-[#E5B869] bg-[#fdf6f0] dark:bg-slate-800 border border-[#240303]/15 px-2 py-0.5 rounded-md shrink-0">
+            {cart.items.length}টি আইটেম
+          </span>
+        </div>
+        <Link
+          href="/products"
+          className="text-xs font-semibold text-[#240303] dark:text-[#E5B869] hover:underline flex items-center gap-1 shrink-0 ml-auto"
+        >
+          আরও পণ্য যোগ করুন <ArrowRight className="size-3" />
+        </Link>
+      </div>
 
-              return (
-                <article
-                  key={itemKey}
-                  className="group relative flex gap-3 sm:gap-4 p-3 sm:p-5 rounded-3xl border border-border/40 bg-card/40 backdrop-blur-[20px] hover:shadow-xl hover:border-border/60 transition-all duration-300 overflow-hidden"
-                >
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-6 items-start min-w-0">
+        {/* ── Left Column: Cart Items List (Ant Design Card Layout) ── */}
+        <section className="lg:col-span-2 space-y-3 min-w-0 w-full" aria-label="কার্ট আইটেম">
+          {cart.items.map((item: IPopulatedCartItem) => {
+            const product = item.product;
+            const itemKey = `${product._id}-${item.color || ""}-${item.size || ""}`;
+            const productHref = `/products/${product.category?.slug || "all"}/${product.slug}`;
+            const itemTotal = item.subtotal;
+
+            return (
+              <article
+                key={itemKey}
+                className="group relative rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-2xs hover:border-[#240303]/30 transition-all p-3 sm:p-4 min-w-0 overflow-hidden"
+              >
+                {/* ── Top Section: Image + Title + Price ── */}
+                <div className="flex gap-3 min-w-0">
+                  {/* Thumbnail */}
                   <Link
                     href={productHref}
-                    className="relative size-24 sm:size-32 shrink-0 overflow-hidden rounded-xl bg-muted/20 aspect-square group-hover:shadow-lg transition-shadow duration-300"
+                    className="relative size-18 sm:size-22 shrink-0 overflow-hidden rounded-lg bg-slate-50 border border-slate-200 dark:border-slate-700 aspect-square"
                   >
                     <Image
                       src={product.thumbnail}
                       alt={product.title}
                       fill
-                      className="object-cover transition-transform duration-700 ease-in-out group-hover:scale-110"
-                      sizes="(max-width: 640px) 96px, 128px"
+                      className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      sizes="(max-width: 640px) 72px, 88px"
                     />
-
-                    {/* ইমেজকে কার্ডের মতো প্রিমিয়াম দেখানোর জন্য একটি হালকা ওভারলে (ঐচ্ছিক) */}
-                    <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-2xl" />
                   </Link>
 
-                  <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-                        <Badge
-                          variant="secondary"
-                          className="bg-primary/10 text-primary border-none text-[10px] font-bold"
-                        >
-                          PREMIUM
-                        </Badge>
-                        <Badge
-                          variant="secondary"
-                          className="bg-green-500/10 text-green-600 border-none text-[10px]"
-                        >
-                          ইন স্টক
-                        </Badge>
-                      </div>
-
-                      <Link href={productHref}>
-                        <h3 className="font-bold text-[13px] sm:text-lg leading-snug hover:text-primary transition-colors line-clamp-2 mb-1.5 sm:mb-2">
-                          {product.title}
-                        </h3>
-                      </Link>
-
-                      {(item.color || item.size) && (
-                        <div className="flex flex-wrap gap-1.5 mb-2">
-                          {item.color && (
-                            <Badge variant="outline" className="text-[10px] bg-muted/40 font-medium">
-                              কালার: {item.color}
-                            </Badge>
-                          )}
-                          {item.size && (
-                            <Badge variant="outline" className="text-[10px] bg-muted/40 font-medium uppercase">
-                              সাইজ: {item.size}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
+                  {/* Info details */}
+                  <div className="flex-1 min-w-0 pr-6 sm:pr-0">
+                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                      <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800 text-[10px] font-semibold px-2 py-0.5 rounded-md">
+                        স্টকে আছে
+                      </span>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 sm:gap-4 mt-3 sm:mt-6">
-                      <div className="flex flex-row sm:flex-col items-baseline sm:items-start justify-between sm:justify-start gap-1">
-                        <div className="flex items-baseline gap-1.5 sm:gap-2">
-                          <span className="text-lg sm:text-2xl font-black text-primary">
-                            {formatPrice(
-                              product.salePrice || product.regularPrice,
-                            )}
+                    <Link href={productHref}>
+                      <h3 className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white leading-snug hover:text-[#240303] dark:hover:text-[#E5B869] transition-colors line-clamp-2 mb-1">
+                        {product.title}
+                      </h3>
+                    </Link>
+
+                    {/* Variant tags */}
+                    {(item.color || item.size) && (
+                      <div className="flex flex-wrap gap-1.5 mb-1.5">
+                        {item.color && (
+                          <span className="text-[10px] font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded">
+                            কালার: {item.color}
                           </span>
-                        </div>
-                        {product.salePrice && (
-                          <span className="text-[9px] sm:text-xs text-muted-foreground line-through tracking-widest">
-                            {formatPrice(product.regularPrice)}
+                        )}
+                        {item.size && (
+                          <span className="text-[10px] font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-1.5 py-0.5 rounded uppercase">
+                            সাইজ: {item.size}
                           </span>
                         )}
                       </div>
+                    )}
 
-                      <div className="flex flex-wrap items-center justify-between w-full sm:w-auto gap-2 mt-auto">
-                        <QuantitySelector
-                          quantity={item.itemQuantity}
-                          min={1}
-                          max={product.stockQuantity || 10}
-                          setQuantity={(val) =>
-                            updateQty({ productId: product._id, quantity: val, color: item.color, size: item.size })
-                          }
-                          variant="premium"
-                          className="scale-[0.75] xs:scale-[0.85] sm:scale-100 origin-left"
-                        />
+                    {/* Unit price */}
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-xs sm:text-sm font-black text-[#240303] dark:text-[#f87171]">
+                        {formatPrice(product.salePrice || product.regularPrice)}
+                      </span>
+                      {product.salePrice && (
+                        <span className="text-[10px] text-slate-400 line-through">
+                          {formatPrice(product.regularPrice)}
+                        </span>
+                      )}
+                    </div>
 
-                        <div className="sm:hidden flex flex-col items-end pl-2 border-l border-border/20 ml-auto shrink-0">
-                          <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tight">
-                            সাবটোটাল
-                          </span>
-                          <span className="text-sm font-black text-primary leading-none whitespace-nowrap">
-                            {formatPrice(itemTotal)}
-                          </span>
-                        </div>
-                      </div>
+                    {/* Desktop Controls (Inline with info on tablet/desktop) */}
+                    <div className="hidden sm:flex items-center gap-3 mt-3 pt-2 border-t border-slate-100 dark:border-slate-800">
+                      <QuantitySelector
+                        quantity={item.itemQuantity}
+                        min={1}
+                        max={product.stockQuantity || 10}
+                        setQuantity={(val) =>
+                          updateQty({
+                            productId: product._id,
+                            quantity: val,
+                            color: item.color,
+                            size: item.size,
+                          })
+                        }
+                      />
                     </div>
                   </div>
 
-                  <div className="hidden sm:flex flex-col items-end justify-between pl-4 min-w-30 border-l border-border/20 ml-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-10 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                  {/* Desktop Right Column: Delete & Subtotal */}
+                  <div className="hidden sm:flex flex-col items-end justify-between pl-3 border-l border-slate-100 dark:border-slate-800 min-w-28 shrink-0">
+                    <button
+                      type="button"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
                       onClick={() => removeItem({ productId: product._id, color: item.color, size: item.size })}
+                      aria-label="মুছে ফেলুন"
+                      title="আইটেমটি মুছে ফেলুন"
                     >
-                      <Trash2 className="size-5" />
-                    </Button>
+                      <Trash2 className="size-4" />
+                    </button>
 
-                    <div className="text-right pb-1">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">
+                    <div className="text-right">
+                      <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-0.5">
                         সাবটোটাল
                       </p>
-                      <p className="text-2xl font-black text-primary tracking-tight">
+                      <p className="text-base font-black text-[#240303] dark:text-white">
                         {formatPrice(itemTotal)}
                       </p>
                     </div>
                   </div>
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="sm:hidden absolute top-2 right-2 size-9 rounded-full text-muted-foreground/40 hover:text-destructive bg-card/20 backdrop-blur-sm"
-                    onClick={() => removeItem({ productId: product._id })}
+                  {/* Mobile Trash Button (Top Right corner) */}
+                  <button
+                    type="button"
+                    className="sm:hidden absolute top-2.5 right-2.5 p-1 rounded-md text-slate-400 hover:text-red-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                    onClick={() => removeItem({ productId: product._id, color: item.color, size: item.size })}
+                    aria-label="মুছে ফেলুন"
                   >
                     <Trash2 className="size-4" />
-                  </Button>
-                </article>
-              );
-            })}
-          </div>
-        </section>
-        {/* Right: Order Summary */}
-        <aside className="lg:col-span-1 space-y-4" aria-label="অর্ডার সারাংশ">
-          <div className="lg:sticky lg:top-20 flex flex-col gap-4">
-            <div className="rounded-3xl border border-border/40 bg-card/40 backdrop-blur-[20px] p-6 sm:p-8 shadow-xl relative overflow-hidden ring-1 ring-white/5">
-              <div className="absolute top-0 right-0 size-32 bg-primary/10 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+                  </button>
+                </div>
 
-              <h2 className="text-2xl font-black mb-6 border-b border-border/40 pb-4">
-                অর্ডার সারাংশ
+                {/* ── Mobile Bottom Row: Dedicated Quantity + Subtotal Row ── */}
+                <div className="sm:hidden flex items-center justify-between pt-2.5 mt-2.5 border-t border-slate-100 dark:border-slate-800 w-full min-w-0">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span className="text-[11px] text-slate-500 font-medium shrink-0">পরিমাণ:</span>
+                    <QuantitySelector
+                      quantity={item.itemQuantity}
+                      min={1}
+                      max={product.stockQuantity || 10}
+                      setQuantity={(val) =>
+                        updateQty({
+                          productId: product._id,
+                          quantity: val,
+                          color: item.color,
+                          size: item.size,
+                        })
+                      }
+                    />
+                  </div>
+
+                  <div className="text-right shrink-0 pl-2">
+                    <span className="text-[10px] text-slate-400 block leading-none">সাবটোটাল</span>
+                    <span className="text-sm font-black text-[#240303] dark:text-white">
+                      {formatPrice(itemTotal)}
+                    </span>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </section>
+
+        {/* ── Right Column: Order Summary (Ant Design Card) ── */}
+        <aside className="lg:col-span-1 space-y-4 min-w-0 w-full" aria-label="অর্ডার সারাংশ">
+          <div className="lg:sticky lg:top-20 space-y-4 min-w-0">
+            {/* Order Summary Box */}
+            <div className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-6 shadow-xs min-w-0">
+              <h2 className="text-base font-bold text-slate-900 dark:text-white pb-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                <span>অর্ডার সারাংশ</span>
+                <span className="text-xs font-normal text-slate-500">
+                  {cart.items.length}টি আইটেম
+                </span>
               </h2>
 
-              <div className="space-y-4 mb-8">
-                {/* Item Breakdown List */}
-                <div className="space-y-3 mb-6 max-h-55 overflow-y-auto pr-2 custom-scrollbar">
-                  {cart.items.map((item: IPopulatedCartItem) => (
-                    <div
-                      key={`${item.product._id}-${item.color || ""}-${item.size || ""}`}
-                      className="flex justify-between items-start gap-3 text-sm px-1"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="text-foreground font-semibold line-clamp-1 leading-tight">
-                          {item.product.title}
-                        </p>
-                        {(item.color || item.size) && (
-                          <p className="text-[10px] text-muted-foreground font-medium mt-0.5">
-                            {[item.color && `কালার: ${item.color}`, item.size && `সাইজ: ${item.size}`].filter(Boolean).join(" | ")}
-                          </p>
-                        )}
-                        <p className="text-[11px] text-muted-foreground font-black uppercase tracking-widest mt-1">
-                          {formatPrice(
-                            item.product.salePrice || item.product.regularPrice,
-                          )}{" "}
-                          <span className="text-primary mx-0.5 lowercase">
-                            x
-                          </span>{" "}
-                          {item.itemQuantity}
-                        </p>
-                      </div>
-                      <span className="font-bold shrink-0 text-right">
-                        {formatPrice(item.subtotal)}
-                      </span>
+              {/* Items Breakdown list */}
+              <div className="py-3 space-y-2.5 max-h-48 overflow-y-auto pr-1 custom-scrollbar border-b border-slate-100 dark:border-slate-800 min-w-0">
+                {cart.items.map((item: IPopulatedCartItem) => (
+                  <div
+                    key={`${item.product._id}-${item.color || ""}-${item.size || ""}`}
+                    className="flex justify-between items-start gap-2 text-xs min-w-0"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-800 dark:text-slate-200 truncate">
+                        {item.product.title}
+                      </p>
+                      <p className="text-[10px] text-slate-400 mt-0.5 truncate">
+                        {item.itemQuantity} × {formatPrice(item.product.salePrice || item.product.regularPrice)}
+                        {(item.color || item.size) && ` (${[item.color, item.size].filter(Boolean).join(", ")})`}
+                      </p>
                     </div>
-                  ))}
-                </div>
-
-                {/* ✅ Dashed Line before Subtotal */}
-                <div className="border-t border-dashed border-gray-300 pt-4 ">
-                  <div className="flex justify-between items-center text-sm sm:text-base px-1">
-                    <span className="text-muted-foreground font-medium">
-                      সাবটোটাল
-                    </span>
-                    <span className="font-bold">{formatPrice(cart.total)}</span>
-                  </div>
-                </div>
-
-                {/* ✅ Solid Line (Separator) before Grand Total */}
-                <div className="pt-4 mt-4 border-t border-gray-300 flex justify-between items-center px-1">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-bold text-muted-foreground uppercase tracking-wider">
-                      সর্বমোট
-                    </span>
-                    <span className="text-[10px] text-muted-foreground font-medium">
-                      (ডেলিভারি চার্জ ছাড়া)
+                    <span className="font-bold text-slate-800 dark:text-slate-100 shrink-0">
+                      {formatPrice(item.subtotal)}
                     </span>
                   </div>
-                  <span className="text-3xl font-black text-primary tracking-tight">
+                ))}
+              </div>
+
+              {/* Calculation Rows */}
+              <div className="py-3.5 space-y-2 text-xs">
+                <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
+                  <span>সাবটোটাল</span>
+                  <span className="font-bold text-slate-900 dark:text-white">
                     {formatPrice(cart.total)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center text-slate-600 dark:text-slate-300">
+                  <span>ডেলিভারি চার্জ</span>
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    পরবর্তী ধাপে নির্ধারিত হবে
                   </span>
                 </div>
               </div>
 
+              {/* Total Row */}
+              <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-between items-baseline mb-5 min-w-0">
+                <div className="min-w-0">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider block">
+                    সর্বমোট
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    (ডেলিভারি চার্জ ছাড়া)
+                  </span>
+                </div>
+                <span className="text-xl sm:text-2xl font-black text-[#240303] dark:text-[#f87171] shrink-0">
+                  {formatPrice(cart.total)}
+                </span>
+              </div>
+
+              {/* Primary Action Button (Deep Brownish Maroon) */}
               <Button
                 asChild
-                size="lg"
-                className="w-full h-14 rounded-2xl text-lg font-black bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all active:scale-[0.98] group"
+                className="w-full h-11 rounded-lg text-sm font-bold bg-gradient-to-r from-[#1A0101] via-[#240303] to-[#1E0202] hover:from-[#240303] hover:to-[#2D0505] text-white border-none shadow-xs transition-all active:scale-[0.98] group cursor-pointer"
               >
                 <Link href="/checkout">
-                  চেকআউট করুন
-                  <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
+                  চেকআউটে এগিয়ে যান
+                  <ArrowRight className="ml-1.5 size-4 transition-transform group-hover:translate-x-1" />
                 </Link>
               </Button>
 
-              <div className="mt-6 space-y-3">
-                <div className="flex items-center gap-3 text-xs text-muted-foreground bg-muted/30 p-3 rounded-xl">
-                  <Truck className="size-4 text-primary shrink-0" />
-                  <p>পরবর্তী পেজে ডেলিভারি এরিয়া সিলেক্ট করুন।</p>
-                </div>
+              {/* Ant Design Alert Style Delivery Note */}
+              <div className="mt-4 flex items-center gap-2.5 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
+                <Truck className="size-4 text-[#240303] dark:text-[#E5B869] shrink-0" />
+                <p className="text-[11px]">পরবর্তী পেজে নাম, ঠিকানা ও ডেলিভারি এরিয়া সিলেক্ট করুন।</p>
+              </div>
+
+              {/* Continue Shopping Link */}
+              <div className="pt-3 text-center">
+                <Link
+                  href="/products"
+                  className="text-xs font-semibold text-slate-500 hover:text-[#240303] dark:hover:text-[#E5B869] transition-colors inline-flex items-center gap-1"
+                >
+                  ← আরও খেজুর বা পণ্য যোগ করুন
+                </Link>
               </div>
             </div>
 
-            {/* Trust Badges */}
-            <div className="rounded-2xl border border-border/40 bg-card/20 backdrop-blur-md p-5 flex flex-col gap-4 shadow-sm">
-              <h4 className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                GadgeterHub নিশ্চিত করছে
+            {/* Trust Badges (Ant Design Card) */}
+            <div className="rounded-xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-2xs min-w-0">
+              <h4 className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3">
+                আমাদের সেবা ও নিশ্চয়তা
               </h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                    <ShieldCheck className="size-5" />
-                  </div>
-                  <div className="space-y-0.5">
-                    <p className="text-[11px] font-bold">অরিজিনাল পণ্য</p>
-                    <p className="text-[9px] text-muted-foreground">
-                      গ্যারান্টিড
-                    </p>
+              <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 min-w-0">
+                  <ShieldCheck className="size-4 text-[#240303] dark:text-[#E5B869] shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-800 dark:text-white truncate">১০০% খাঁটি পণ্য</p>
+                    <p className="text-[10px] text-slate-400 truncate">ন্যাচারাল খেজুর</p>
                   </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  <div className="size-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-600">
-                    <Cpu className="size-5" />
+
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 min-w-0">
+                  <Package className="size-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-800 dark:text-white truncate">ক্যাশ অন ডেলিভারি</p>
+                    <p className="text-[10px] text-slate-400 truncate">দেখে মূল্য পরিশোধ</p>
                   </div>
-                  <div className="space-y-0.5">
-                    <p className="text-[11px] font-bold">টেক সাপোর্ট</p>
-                    <p className="text-[9px] text-muted-foreground">
-                      ২৪/৭ হেল্পডেস্ক
-                    </p>
+                </div>
+
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 min-w-0">
+                  <RotateCcw className="size-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-800 dark:text-white truncate">সহজ রিটার্ন</p>
+                    <p className="text-[10px] text-slate-400 truncate">৭ দিনের মধ্যে</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2 p-2 rounded-lg bg-slate-50/70 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800 min-w-0">
+                  <Truck className="size-4 text-blue-600 shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold text-slate-800 dark:text-white truncate">দ্রুত ডেলিভারি</p>
+                    <p className="text-[10px] text-slate-400 truncate">২৪–৪৮ ঘণ্টার মধ্যে</p>
                   </div>
                 </div>
               </div>
@@ -357,26 +402,25 @@ export default function CartPageClient() {
         </aside>
       </div>
 
-      {/* Mobile Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-card/90 backdrop-blur-2xl border-t border-primary/20 p-4 shadow-2xl safe-area-bottom">
-        <div className="container mx-auto flex items-center justify-between gap-5">
+      {/* ── Mobile Sticky Bottom Bar (Ant Design Style) ── */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 lg:hidden bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 py-3 shadow-lg safe-area-bottom">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col">
-            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-              সর্বমোট
+            <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+              সর্বমোট ({cart.items.length}টি)
             </span>
-            <span className="text-2xl font-black text-primary tracking-tight">
+            <span className="text-lg font-black text-[#240303] dark:text-[#f87171] leading-tight">
               {formatPrice(cart.total)}
             </span>
           </div>
 
           <Button
             asChild
-            size="lg"
-            className="h-14 rounded-2xl text-base font-black shadow-xl shadow-primary/20 group flex-1"
+            className="h-10 px-5 rounded-lg text-xs sm:text-sm font-bold bg-gradient-to-r from-[#1A0101] via-[#240303] to-[#1E0202] text-white border-none shadow-xs flex-1 max-w-[200px]"
           >
-            <Link href="/checkout">
+            <Link href="/checkout" className="flex items-center justify-center gap-1.5">
               চেকআউট
-              <ArrowRight className="ml-2 size-5 transition-transform group-hover:translate-x-1" />
+              <ArrowRight className="size-3.5" />
             </Link>
           </Button>
         </div>

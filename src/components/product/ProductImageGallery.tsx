@@ -13,7 +13,7 @@ export function ProductImageGallery({ images }: ProductImageGalleryProps) {
 
   if (!images.length) {
     return (
-      <div className="aspect-square bg-slate-50 rounded-3xl flex items-center justify-center">
+      <div className="aspect-square bg-slate-50 rounded-2xl flex items-center justify-center border border-slate-200/80">
         <span className="text-slate-300 font-bold uppercase tracking-widest text-[10px]">
           No Image
         </span>
@@ -22,52 +22,45 @@ export function ProductImageGallery({ images }: ProductImageGalleryProps) {
   }
 
   return (
-    // Mobile  → flex-col : thumbnails BELOW main image (horizontal row)
-    // Desktop → flex-row : thumbnails LEFT (vertical strip), main image RIGHT
-    // md:h-[440px] fixes height so both strips stay equal — no empty space
-    <div className="flex flex-col md:flex-row md:h-[440px] gap-2 md:gap-3">
-
-      {/* ── Thumbnail Strip ─────────────────────────────────────────────────
-          order-2 / mobile  → horizontal row below main image
-          order-1 / desktop → vertical strip on the LEFT side               */}
-      <div className="order-2 md:order-1 flex md:flex-col gap-2 overflow-x-auto md:overflow-x-visible md:overflow-y-auto pb-1 md:pb-0 shrink-0 custom-scrollbar">
-        {images.map((img, idx) => (
-          <button
-            key={idx}
-            onClick={() => setActiveImage(idx)}
-            aria-label={`View image ${idx + 1}`}
-            className={cn(
-              "relative size-[60px] md:size-[68px] shrink-0 rounded-xl md:rounded-2xl overflow-hidden border-2 transition-all duration-200",
-              activeImage === idx
-                ? "border-[#1A0101] ring-2 ring-[#C59B27]/40 shadow-md scale-[1.04]"
-                : "border-[#2F0C0B]/15 hover:border-[#C59B27]/50 opacity-70 hover:opacity-100"
-            )}
-          >
-            <Image
-              src={img.url}
-              alt={img.alt}
-              fill
-              sizes="68px"
-              className="object-cover"
-            />
-          </button>
-        ))}
-      </div>
-
-      {/* ── Main Image ─────────────────────────────────────────────────────
-          order-1 / mobile  → on TOP
-          order-2 / desktop → on the RIGHT, fills full md:h-[440px] height
-          aspect-square on mobile, aspect-auto on desktop (no wasted space)  */}
-      <div className="order-1 md:order-2 flex-1 min-w-0 relative aspect-square md:aspect-auto rounded-3xl overflow-hidden bg-[#FAF7F2]/60 dark:bg-[#1A0505]/40 border border-[#2F0C0B]/12 shadow-[0_4px_20px_rgba(42,1,1,0.06)] group">
+    <div className="flex flex-col gap-3 w-full">
+      {/* ── 1:1 Square Main Image ── */}
+      <div className="w-full relative aspect-square rounded-2xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs group">
         <Image
           src={images[activeImage].url}
           alt={images[activeImage].alt}
           fill
           priority
-          sizes="(max-width: 768px) 100vw, 45vw"
-          className="object-cover transition-transform duration-700 group-hover:scale-105"
+          sizes="(max-width: 768px) 100vw, 50vw"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
       </div>
+
+      {/* ── Horizontal Thumbnail Strip (Below Main Image on Mobile & Desktop) ── */}
+      {images.length > 1 && (
+        <div className="flex flex-row gap-2.5 overflow-x-auto pb-1 shrink-0 custom-scrollbar">
+          {images.map((img, idx) => (
+            <button
+              key={idx}
+              onClick={() => setActiveImage(idx)}
+              aria-label={`View image ${idx + 1}`}
+              className={cn(
+                "relative size-16 sm:size-20 shrink-0 rounded-xl overflow-hidden border-2 transition-all duration-200 cursor-pointer",
+                activeImage === idx
+                  ? "border-[#240303] dark:border-amber-400 shadow-xs scale-[1.02]"
+                  : "border-slate-200 dark:border-slate-700 hover:border-[#240303]/50 opacity-70 hover:opacity-100"
+              )}
+            >
+              <Image
+                src={img.url}
+                alt={img.alt}
+                fill
+                sizes="80px"
+                className="object-cover"
+              />
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

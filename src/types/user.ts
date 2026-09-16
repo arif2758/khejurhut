@@ -41,6 +41,8 @@ export interface IUser {
   resetToken?: string;
   resetTokenExpiry?: Date;
   lastLogin?: Date;
+  providers?: string[];
+  hasPassword?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }

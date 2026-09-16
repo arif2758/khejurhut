@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { ICartItem, IPopulatedCartItem } from "@/types/cart";
 
 import { WhatsAppOrderButton } from "./WhatsAppOrderButton"; 
+import { CallOrderButton } from "./CallOrderButton";
 import { IProduct } from "@/types/product"; 
 
 interface ProductActionsProps {
@@ -142,16 +143,16 @@ export function ProductActions({
     : null;
 
   return (
-    <div className="space-y-5">
-      {/* Color Selection - Pill Radio Buttons */}
+    <div className="space-y-4">
+      {/* Color Selection - Ant Design Tag/Button Style */}
       {product.colors && product.colors.length > 0 && (
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">
-              কালার: <span className="text-foreground font-bold font-sans capitalize">{selectedColor}</span>
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              কালার: <span className="text-slate-900 dark:text-white font-bold font-sans capitalize">{selectedColor}</span>
             </p>
             {formattedWeight && (
-              <span className="text-[11px] font-bold text-muted-foreground bg-muted/60 border border-border/40 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded-md flex items-center gap-1">
                 ⚖️ {formattedWeight}
               </span>
             )}
@@ -165,10 +166,10 @@ export function ProductActions({
                   type="button"
                   onClick={() => setSelectedColor(c)}
                   className={cn(
-                    "px-3.5 py-1.5 rounded-full text-xs font-bold transition-all",
+                    "h-8 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer",
                     isSelected
-                      ? "bg-gradient-to-r from-[#1A0101] to-[#260404] text-[#FAF6F0] shadow-xs scale-105"
-                      : "bg-white/80 text-[#2F0C0B] border border-[#2F0C0B]/15 hover:border-[#C59B27]/50 hover:bg-[#FAF6F0]"
+                      ? "bg-[#240303] text-white border border-[#240303] shadow-2xs"
+                      : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-[#240303]/50 hover:text-[#240303]"
                   )}
                 >
                   {c}
@@ -179,11 +180,11 @@ export function ProductActions({
         </div>
       )}
 
-      {/* Size Selection - Pill Radio Buttons */}
+      {/* Size Selection - Ant Design Tag/Button Style */}
       {product.sizes && product.sizes.length > 0 && (
         <div className="space-y-2">
-          <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">
-            সাইজ: <span className="text-foreground font-bold font-sans uppercase">{selectedSize}</span>
+          <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+            সাইজ: <span className="text-slate-900 dark:text-white font-bold font-sans uppercase">{selectedSize}</span>
           </p>
           <div className="flex flex-wrap gap-2">
             {product.sizes.map((s) => {
@@ -194,10 +195,10 @@ export function ProductActions({
                   type="button"
                   onClick={() => setSelectedSize(s)}
                   className={cn(
-                    "px-3.5 py-1.5 rounded-full text-xs font-bold transition-all",
+                    "h-8 px-3 rounded-md text-xs font-semibold transition-all cursor-pointer",
                     isSelected
-                      ? "bg-gradient-to-r from-[#1A0101] to-[#260404] text-[#FAF6F0] shadow-xs scale-105"
-                      : "bg-white/80 text-[#2F0C0B] border border-[#2F0C0B]/15 hover:border-[#C59B27]/50 hover:bg-[#FAF6F0]"
+                      ? "bg-[#240303] text-white border border-[#240303] shadow-2xs"
+                      : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:border-[#240303]/50 hover:text-[#240303]"
                   )}
                 >
                   {s}
@@ -210,18 +211,19 @@ export function ProductActions({
 
       {/* Fallback Weight Badge if no colors */}
       {(!product.colors || product.colors.length === 0) && formattedWeight && (
-        <div className="flex items-center justify-between text-xs font-bold text-muted-foreground bg-muted/30 p-2.5 rounded-xl border border-border/40">
+        <div className="flex items-center justify-between text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-lg border border-slate-200 dark:border-slate-700">
           <span>ওজন:</span>
-          <span className="text-foreground flex items-center gap-1 font-bold">⚖️ {formattedWeight}</span>
+          <span className="text-slate-900 dark:text-white flex items-center gap-1 font-bold">⚖️ {formattedWeight}</span>
         </div>
       )}
-      {/* Quantity - Centralized */}
-      <div className="space-y-2">
-        <p className="text-xs font-black uppercase tracking-widest text-muted-foreground/60">
+
+      {/* Quantity & Stock Status - Ant Design Layout */}
+      <div className="space-y-1.5">
+        <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
           পরিমাণ{" "}
           {isInCart && (
-            <span className="text-primary ml-2 lowercase font-medium">
-              (কার্টে আছে)
+            <span className="text-[#240303] dark:text-[#E5B869] font-bold ml-1">
+              (কার্টে ইতিমধ্যে যোগ করা আছে)
             </span>
           )}
         </p>
@@ -231,92 +233,94 @@ export function ProductActions({
             setQuantity={handleQtyChange}
             min={isInCart ? 0 : 1}
             max={stock}
-            className="h-12"
           />
-          <p className="text-xs">
+          <div>
             {stock > 0 ? (
-              <span className="text-emerald-600 font-bold bg-emerald-50 px-2 py-1 rounded-full">
-                {stock} স্টক আছে
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/60 px-2.5 py-1 rounded-md">
+                <span className="size-1.5 rounded-full bg-emerald-500"></span>
+                {stock} পিস স্টকে আছে
               </span>
             ) : (
-              <span className="text-red-500 font-bold bg-red-50 px-2 py-1 rounded-full">
-                স্টক নেই
+              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 px-2.5 py-1 rounded-md">
+                <span className="size-1.5 rounded-full bg-red-500"></span>
+                স্টক শেষ
               </span>
             )}
-          </p>
+          </div>
         </div>
       </div>
 
-      {/* Action Buttons — 2 columns */}
-      <div className="grid grid-cols-2 gap-3 w-full">
-        <Button
-          onClick={handleAddToCart}
-          disabled={isDisabled}
-          className={cn(
-            "w-full h-12 rounded-xl text-sm font-black uppercase tracking-tight gap-2 transition-all active:scale-[0.97]",
-            isInCart
-              ? "bg-slate-100 text-slate-500 border border-slate-200 cursor-not-allowed dark:bg-slate-800/50 dark:text-slate-400"
-              : "bg-[#FAF6F0] text-[#2A0101] hover:bg-white border border-[#2A0101]/30 hover:border-[#C59B27]/60 shadow-sm",
-          )}
-        >
-          <ShoppingCart className="size-4 shrink-0 text-[#C59B27]" />
-          {isInCart ? "যোগ করা হয়েছে" : "যোগ করুন"}
-        </Button>
+      {/* Action Buttons — 2 columns Row 1, Row 2 WhatsApp full width, Row 3 Call for Order full width */}
+      <div className="flex flex-col gap-2.5 w-full pt-1">
+        {/* Row 1: যোগ করুন & কিনুন */}
+        <div className="grid grid-cols-2 gap-3 w-full">
+          <Button
+            onClick={handleAddToCart}
+            disabled={isDisabled}
+            className={cn(
+              "w-full h-11 rounded-lg text-xs sm:text-sm font-bold tracking-tight gap-2 transition-all active:scale-[0.98] cursor-pointer",
+              isInCart
+                ? "bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed dark:bg-slate-800/50 dark:text-slate-500"
+                : "bg-white dark:bg-slate-900 text-slate-800 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:border-[#240303] hover:text-[#240303] shadow-2xs",
+            )}
+          >
+            <ShoppingCart className="size-4 shrink-0 text-[#240303] dark:text-white" />
+            {isInCart ? "যোগ করা হয়েছে" : "যোগ করুন"}
+          </Button>
 
-        <Button
-          onClick={handleBuyNow}
-          disabled={isDisabled}
-          className="
-            w-full h-12
-            rounded-xl
-            text-sm font-black uppercase tracking-tight
-            gap-2
-            bg-gradient-to-r from-[#1A0101] via-[#240303] to-[#1E0202]
-            text-[#FAF6F0]
-            hover:from-[#240303] hover:to-[#2D0505]
-            border border-[#C59B27]/40
-            shadow-xl shadow-[#1A0101]/30
-            active:scale-[0.97]
-            transition-all
-            dark:bg-[#C59B27] dark:text-[#120000]
-          "
-        >
-          <Zap className="size-4 text-[#E5B869] fill-[#E5B869] shrink-0" />
-          {isInCart ? "চেকআউট" : "কিনুন"}
-        </Button>
-      </div>
-
-      {/* WhatsApp — full-width row, both desktop & mobile */}
-      <WhatsAppOrderButton
-        product={product}
-        quantity={displayQty}
-        color={selectedColor}
-        size={selectedSize}
-      />
-
-      {/* Separator + Trust Badges — mobile only; desktop shown in image column */}
-      <div className="md:hidden">
-        <div className="flex items-center gap-4 py-2">
-          <div className="h-px flex-1 bg-foreground/10"></div>
-          <span className="shrink-0 text-xs font-black uppercase tracking-[0.3em] text-muted-foreground/60">
-            সার্ভিস ইনফো
-          </span>
-          <div className="h-px flex-1 bg-foreground/10"></div>
+          <Button
+            onClick={handleBuyNow}
+            disabled={isDisabled}
+            className="
+              w-full h-11
+              rounded-lg
+              text-xs sm:text-sm font-bold tracking-tight
+              gap-2
+              bg-gradient-to-r from-[#1A0101] via-[#240303] to-[#1E0202]
+              text-white
+              hover:from-[#240303] hover:to-[#2D0505]
+              border-none
+              shadow-xs
+              active:scale-[0.98]
+              transition-all
+              cursor-pointer
+            "
+          >
+            <Zap className="size-4 text-amber-400 fill-amber-400 shrink-0" />
+            {isInCart ? "চেকআউট" : "কিনুন"}
+          </Button>
         </div>
 
-        <div className="flex flex-col rounded-xl border border-[#2F0C0B]/12 overflow-hidden bg-[#FAF7F2]/60 dark:bg-card/40 shadow-xs">
-          <div className="flex items-center gap-3 px-4 py-3">
-            <Truck className="size-4 text-[#1A0101] dark:text-[#E5B869] shrink-0" />
+        {/* Row 2: WhatsApp — Full Width */}
+        <WhatsAppOrderButton
+          product={product}
+          quantity={displayQty}
+          color={selectedColor}
+          size={selectedSize}
+        />
+
+        {/* Row 3: Call for Order — Full Width */}
+        <CallOrderButton
+          phoneNumber="01568390014"
+          displayNumber="01568-390014"
+        />
+      </div>
+
+      {/* Separator + Trust Badges — mobile only */}
+      <div className="md:hidden pt-2">
+        <div className="flex flex-col rounded-lg border border-slate-200 dark:border-slate-800 overflow-hidden bg-white dark:bg-slate-900 shadow-2xs">
+          <div className="flex items-center gap-3 px-3.5 py-2.5">
+            <Truck className="size-4 text-[#240303] dark:text-[#E5B869] shrink-0" />
             <div>
-              <p className="text-[10px] text-muted-foreground">ডেলিভারি</p>
-              <p className="text-xs font-bold text-[#120000] dark:text-foreground">২৪–৪৮ ঘণ্টা</p>
+              <p className="text-[10px] text-slate-400">ডেলিভারি সুবিধা</p>
+              <p className="text-xs font-bold text-slate-800 dark:text-white">২৪–৪৮ ঘণ্টার মধ্যে ডেলিভারি</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 px-4 py-3 border-t border-[#2F0C0B]/10">
-            <RefreshCcw className="size-4 text-[#1A0101] dark:text-[#E5B869] shrink-0" />
+          <div className="flex items-center gap-3 px-3.5 py-2.5 border-t border-slate-100 dark:border-slate-800">
+            <RefreshCcw className="size-4 text-[#240303] dark:text-[#E5B869] shrink-0" />
             <div>
-              <p className="text-[10px] text-muted-foreground">রিটার্ন</p>
-              <p className="text-xs font-bold text-[#120000] dark:text-foreground">৭ দিন</p>
+              <p className="text-[10px] text-slate-400">রিটার্ন পলিসি</p>
+              <p className="text-xs font-bold text-slate-800 dark:text-white">৭ দিনের মধ্যে সহজ রিটার্ন</p>
             </div>
           </div>
         </div>
